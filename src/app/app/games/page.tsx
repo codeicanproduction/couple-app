@@ -1,9 +1,19 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Shuffle, MessageSquare, Sparkles, Lock, MessageCircleHeart } from 'lucide-react'
+import { Shuffle, MessageSquare, Sparkles, Lock, MessageCircleHeart, Zap } from 'lucide-react'
 
 const GAMES = [
+  {
+    id: 'samakan',
+    title: 'Samakan',
+    desc: 'Main bareng pasangan real-time',
+    icon: Zap,
+    color: 'bg-purple-50 text-purple-600',
+    available: true,
+    href: '/app/games/samakan',
+    badge: 'BARU',
+  },
   {
     id: 'deep-talk',
     title: 'Obrolan Bareng',

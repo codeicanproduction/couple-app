@@ -755,6 +755,59 @@ export type Database = {
           },
         ]
       }
+      game_sessions: {
+        Row: {
+          id: string
+          couple_id: string
+          created_by: string
+          partner_id: string | null
+          chapter_id: string
+          status: string
+          rounds: Json
+          round_types: string[]
+          total_score: number
+          created_at: string
+          started_at: string | null
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          couple_id: string
+          created_by: string
+          partner_id?: string | null
+          chapter_id?: string
+          status?: string
+          rounds?: Json
+          round_types?: string[]
+          total_score?: number
+          created_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          couple_id?: string
+          created_by?: string
+          partner_id?: string | null
+          chapter_id?: string
+          status?: string
+          rounds?: Json
+          round_types?: string[]
+          total_score?: number
+          created_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wedding_budget_items: {
         Row: {
           id: string
