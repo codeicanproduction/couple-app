@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import webpush from 'web-push'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
-webpush.setVapidDetails(
-  'mailto:admin@coupleapp.id',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
-
 export async function POST(req: NextRequest) {
+  // Set VAPID details inside handler so env vars are available at runtime (not build time)
+  webpush.setVapidDetails(
+    'mailto:admin@coupleapp.id',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  )
+
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
