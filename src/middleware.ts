@@ -27,18 +27,25 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  const path = request.nextUrl.pathname
+
+  // Redirect logged-in users away from landing & auth pages → home
+  if (user && (path === '/' || path === '/auth/login' || path === '/auth/signup')) {
+    return NextResponse.redirect(new URL('/app/home', request.url))
+  }
+
   // Protect /app/* routes
-  if (request.nextUrl.pathname.startsWith('/app/') && !user) {
+  if (path.startsWith('/app/') && !user) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   // Protect /onboarding/* routes
-  if (request.nextUrl.pathname.startsWith('/onboarding/') && !user) {
+  if (path.startsWith('/onboarding/') && !user) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   // Protect /admin/* routes — must be logged in + admin role
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (path.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
@@ -56,5 +63,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/app/:path*', '/onboarding/:path*', '/invite/:path*', '/admin/:path*', '/admin'],
+  matcher: ['/', '/auth/:path*', '/app/:path*', '/onboarding/:path*', '/invite/:path*', '/admin/:path*', '/admin'],
 }

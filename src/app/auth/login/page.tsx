@@ -29,17 +29,39 @@ export default function LoginPage() {
       return
     }
 
-    // Check onboarding status
+    // Check profile + couple status to decide where to send user
     const { data: profile } = await supabase
       .from('profiles')
-      .select('onboarding_complete')
+      .select('name, onboarding_complete')
       .eq('id', data.user.id)
       .single()
 
-    if (!profile?.onboarding_complete) {
-      router.push('/onboarding/welcome')
-    } else {
+    // Check if user is already in a couple
+    const { data: membership } = await supabase
+      .from('couple_members')
+      .select('couple_id')
+      .eq('profile_id', data.user.id)
+      .maybeSingle()
+
+    const hasName = !!profile?.name
+    const hasCouple = !!membership?.couple_id
+    const isComplete = profile?.onboarding_complete
+
+    if (isComplete || (hasName && hasCouple)) {
+      // If somehow flag is still false but they're actually done, fix it silently
+      if (!isComplete && hasName && hasCouple) {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_complete: true })
+          .eq('id', data.user.id)
+      }
       router.push('/app/home')
+    } else if (hasName && !hasCouple) {
+      // Has profile but no couple yet
+      router.push('/onboarding/invite')
+    } else {
+      // Fresh user, start onboarding
+      router.push('/onboarding/welcome')
     }
   }
 
