@@ -6,12 +6,12 @@ import { ArrowLeft, Lock } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const OCCASIONS = [
-  { value: 'anniversary', label: '💍 Anniversary', desc: 'Tulis sesuatu untuk hari jadi kalian' },
-  { value: 'birthday', label: '🎂 Ulang Tahun', desc: 'Surprise di hari ulang tahun pasangan' },
-  { value: 'wedding_day', label: '💒 Hari Nikah', desc: 'Surat untuk dibaca di hari pernikahan' },
-  { value: 'milestone', label: '🌟 Milestone', desc: '1000 hari, 3 tahun, atau pencapaian lain' },
-  { value: 'new_year', label: '🎆 Tahun Baru', desc: 'Resolusi dan harapan bersama' },
-  { value: 'custom', label: '✉️ Bebas', desc: 'Kapan saja kamu pilih' },
+  { value: 'anniversary', label: 'Anniversary', desc: 'Tulis sesuatu untuk hari jadi kalian' },
+  { value: 'birthday', label: 'Ulang Tahun', desc: 'Surprise di hari ulang tahun pasangan' },
+  { value: 'wedding_day', label: 'Hari Nikah', desc: 'Surat untuk dibaca di hari pernikahan' },
+  { value: 'milestone', label: 'Milestone', desc: '1000 hari, 3 tahun, atau pencapaian lain' },
+  { value: 'new_year', label: 'Tahun Baru', desc: 'Resolusi dan harapan bersama' },
+  { value: 'custom', label: 'Bebas', desc: 'Kapan saja kamu pilih' },
 ]
 
 const MAX_CHARS = 2000
@@ -130,7 +130,7 @@ export default function WriteLetter() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: partnerId,
-          title: '📬 Ada surat rahasia!',
+          title: 'CoupleApp',
           body: `Kamu punya surat yang bisa dibuka ${formatWIB(unlockTimestamp)}`,
           url: '/app/letters',
         }),
@@ -144,7 +144,9 @@ export default function WriteLetter() {
   if (done) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-8 text-center animate-fade-in">
-        <div className="mb-6 text-6xl">📬</div>
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose/10">
+          <Lock className="h-8 w-8 text-rose" />
+        </div>
         <h2 className="text-2xl font-bold text-ink">Surat Terkunci!</h2>
         <p className="mt-3 text-sm text-ink-muted leading-relaxed">
           Suratmu untuk {partnerName} sudah tersimpan dan terkunci.<br />

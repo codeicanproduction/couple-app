@@ -297,7 +297,9 @@ export default function WeddingPlannerPage() {
 
         {items.length === 0 && !showAdd && (
           <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-            <div className="mb-3 text-4xl">💒</div>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose/10">
+              <Heart className="h-6 w-6 text-rose" />
+            </div>
             <p className="text-sm font-semibold text-ink">Belum ada item budget</p>
             <p className="mt-1 text-xs text-ink-muted">Mulai tambahkan item-item biaya nikah kalian</p>
           </div>

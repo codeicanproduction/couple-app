@@ -76,7 +76,7 @@ export default function OnboardingInstallPage() {
                   disabled={enablingPush}
                   className="mt-2.5 rounded-xl bg-rose px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-60"
                 >
-                  {enablingPush ? 'Mengaktifkan...' : '🔔 Aktifkan Notifikasi'}
+                  {enablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}
                 </button>
               )}
             </div>

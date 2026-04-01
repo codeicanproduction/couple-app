@@ -182,7 +182,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
           />
           <span className={`text-sm font-bold ${isDisabled ? 'text-ink-muted' : 'text-white'}`}>
             {justSent
-              ? 'Terkirim! 💕'
+              ? 'Terkirim!'
               : isCoolingDown
               ? `Bisa kirim lagi dalam ${formatCountdown(cooldownMs)}`
               : isMaxedOut
@@ -197,11 +197,11 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
       {justSent && (
         <p className="mt-1.5 text-center text-xs animate-fade-in">
           {pushStatus === 'sent' ? (
-            <span className="text-sage-dark">✅ Notifikasi terkirim ke pasangan!</span>
+            <span className="text-sage-dark">Notifikasi terkirim ke pasangan</span>
           ) : pushStatus === 'no_sub' ? (
-            <span className="text-ink-muted">💕 Kangen terkirim! (pasangan belum aktifkan notifikasi)</span>
+            <span className="text-ink-muted">Kangen terkirim — pasangan belum aktifkan notifikasi</span>
           ) : (
-            <span className="text-ink-muted">💌 Mengirim...</span>
+            <span className="text-ink-muted">Mengirim...</span>
           )}
         </p>
       )}

@@ -42,8 +42,8 @@ export default function LettersBanner({ myId, coupleId }: LettersBannerProps) {
         onClick={() => router.push('/app/letters')}
         className="mx-4 flex w-[calc(100%-2rem)] items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 p-4 text-left shadow-elevated transition-all active:scale-[0.98]"
       >
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur-sm animate-bounce">
-          💌
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm animate-bounce">
+          <Mail className="h-5 w-5 text-white" />
         </div>
         <div className="flex-1">
           <p className="text-sm font-bold text-white">

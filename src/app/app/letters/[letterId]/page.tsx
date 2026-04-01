@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Lock } from 'lucide-react'
+import { ArrowLeft, Lock, Mail, MailOpen, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 interface Letter {
@@ -19,12 +19,12 @@ interface Letter {
 }
 
 const OCCASION_LABELS: Record<string, string> = {
-  anniversary: '💍 Anniversary',
-  birthday: '🎂 Ulang Tahun',
-  wedding_day: '💒 Hari Nikah',
-  milestone: '🌟 Milestone',
-  new_year: '🎆 Tahun Baru',
-  custom: '✉️ Surat Spesial',
+  anniversary: 'Anniversary',
+  birthday: 'Ulang Tahun',
+  wedding_day: 'Hari Nikah',
+  milestone: 'Milestone',
+  new_year: 'Tahun Baru',
+  custom: 'Surat Spesial',
 }
 
 function formatWIB(isoStr: string, withTime = true): string {
@@ -126,7 +126,7 @@ export default function LetterDetailPage() {
   const isUnlocked = msLeft <= 0
   const isMine = letter.sender_id === myId
   const isOpened = letter.is_opened
-  const occasion = letter.occasion ? (OCCASION_LABELS[letter.occasion] ?? '✉️') : '✉️ Surat Rahasia'
+  const occasion = letter.occasion ? (OCCASION_LABELS[letter.occasion] ?? 'Surat') : 'Surat Rahasia'
   const daysLeft = Math.ceil(msLeft / 86400000)
 
   // Sender view: sealed letter preview
@@ -140,7 +140,9 @@ export default function LetterDetailPage() {
           <h1 className="text-xl font-bold text-ink">Suratmu</h1>
         </div>
         <div className="px-6 pt-8 flex flex-col items-center text-center">
-          <div className="mb-4 text-7xl">📬</div>
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose/10">
+            <Mail className="h-8 w-8 text-rose" />
+          </div>
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted">{occasion}</p>
           <p className="mt-2 text-lg font-bold text-ink">Untuk {senderName}</p>
           <div className="mt-4 rounded-2xl border border-border bg-cream px-6 py-4 text-center">
@@ -167,11 +169,8 @@ export default function LetterDetailPage() {
           </button>
         </div>
         <div className="px-6 pt-8 flex flex-col items-center text-center">
-          <div
-            className="relative mb-4 text-8xl"
-            style={{ filter: daysLeft <= 7 ? 'drop-shadow(0 0 12px rgba(224,122,158,0.6))' : undefined }}
-          >
-            🔒
+          <div className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl ${daysLeft <= 7 ? 'bg-rose/10 shadow-glow' : 'bg-cream'}`}>
+            <Lock className={`h-10 w-10 ${daysLeft <= 7 ? 'text-rose' : 'text-ink-muted'}`} />
           </div>
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted">{occasion}</p>
           <p className="mt-2 text-lg font-bold text-ink">Dari {senderName}</p>
@@ -182,13 +181,13 @@ export default function LetterDetailPage() {
           </div>
           {daysLeft <= 7 && daysLeft > 0 && (
             <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
-              <p className="text-sm font-semibold text-amber-700">✨ Hampir terbuka!</p>
+              <p className="text-sm font-semibold text-amber-700">Hampir terbuka!</p>
               <p className="text-xs text-amber-600 mt-0.5">Surat ini akan terbuka dalam {daysLeft} hari</p>
             </div>
           )}
           {daysLeft === 0 && (
             <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
-              <p className="text-sm font-semibold text-amber-700">✨ Hampir terbuka hari ini!</p>
+              <p className="text-sm font-semibold text-amber-700">Hampir terbuka hari ini!</p>
             </div>
           )}
         </div>
@@ -203,7 +202,9 @@ export default function LetterDetailPage() {
       {justOpened && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
           <div className="text-center animate-bounce">
-            <div className="text-6xl mb-2">💌</div>
+            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-elevated">
+              <MailOpen className="h-8 w-8 text-rose" />
+            </div>
             <p className="text-lg font-bold text-white bg-rose/80 px-4 py-2 rounded-full backdrop-blur-sm">Surat terbuka!</p>
           </div>
         </div>
@@ -225,7 +226,9 @@ export default function LetterDetailPage() {
       {/* Unlock prompt if receiver and just unlocked and not yet opened */}
       {!isMine && isUnlocked && !isOpened && (
         <div className="mx-6 mt-6 rounded-2xl bg-gradient-to-br from-rose/10 to-rose/5 border border-rose/30 p-6 text-center">
-          <div className="mb-3 text-5xl">💌</div>
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose/10">
+            <MailOpen className="h-7 w-7 text-rose" />
+          </div>
           <p className="text-base font-bold text-ink">Surat sudah bisa dibuka!</p>
           <p className="mt-1 text-sm text-ink-muted">Dari {senderName} — untukmu</p>
           <button
@@ -233,7 +236,7 @@ export default function LetterDetailPage() {
             disabled={opening}
             className="mt-4 w-full rounded-2xl bg-rose py-3.5 text-sm font-bold text-white shadow-elevated transition-all active:scale-[0.98]"
           >
-            {opening ? 'Membuka...' : '💌 Buka Surat'}
+            {opening ? 'Membuka...' : 'Buka Surat'}
           </button>
         </div>
       )}

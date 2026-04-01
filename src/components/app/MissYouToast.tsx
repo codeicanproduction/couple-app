@@ -124,7 +124,7 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
             </p>
 
             {responded ? (
-              <p className="mt-2 text-xs font-semibold text-rose">Kamu sudah balas! 💕</p>
+              <p className="mt-2 text-xs font-semibold text-rose">Kamu sudah balas!</p>
             ) : (
               <button
                 onClick={handleRespond}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Plus, Minus, Check, TrendingUp, Calendar, Pencil, ChevronRight,
+  Plus, Minus, Check, TrendingUp, Calendar, Pencil, ChevronRight, Heart,
   Sparkles, Award, ArrowDownLeft, ArrowUpRight,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
@@ -250,7 +250,9 @@ export default function FinancePage() {
         {/* Wedding planner link */}
         <Link href="/app/finance/wedding"
           className="flex items-center gap-4 rounded-2xl border border-rose/20 bg-rose/5 p-4 transition-all hover:bg-rose/10 active:scale-[0.98]">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-rose/10 text-xl">💒</div>
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-rose/10">
+            <Heart className="h-5 w-5 text-rose" />
+          </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-ink">Wedding Planner</p>
             <p className="text-xs text-ink-muted">Hitung biaya nikah sendiri, item per item</p>

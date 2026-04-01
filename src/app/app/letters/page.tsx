@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Lock, MailOpen, Mail, ChevronRight, Clock } from 'lucide-react'
+import { Plus, Lock, MailOpen, Mail, ChevronRight, Clock, BookOpen, Inbox, PenLine } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 interface Letter {
@@ -18,12 +18,12 @@ interface Letter {
 }
 
 const OCCASION_LABELS: Record<string, string> = {
-  anniversary: '💍 Anniversary',
-  birthday: '🎂 Ulang Tahun',
-  wedding_day: '💒 Hari Nikah',
-  milestone: '🌟 Milestone',
-  new_year: '🎆 Tahun Baru',
-  custom: '✉️ Surat Spesial',
+  anniversary: 'Anniversary',
+  birthday: 'Ulang Tahun',
+  wedding_day: 'Hari Nikah',
+  milestone: 'Milestone',
+  new_year: 'Tahun Baru',
+  custom: 'Surat Spesial',
 }
 
 function msUntil(isoStr: string): number {
@@ -106,7 +106,7 @@ export default function LettersPage() {
     const isOpened = letter.is_opened
     const daysLeft = Math.ceil(ms / 86400000)
 
-    const occasion = letter.occasion ? (OCCASION_LABELS[letter.occasion] ?? '✉️ Surat') : '✉️ Surat Rahasia'
+    const occasion = letter.occasion ? (OCCASION_LABELS[letter.occasion] ?? 'Surat') : 'Surat Rahasia'
 
     return (
       <button
@@ -120,12 +120,16 @@ export default function LettersPage() {
         }`}
       >
         {/* Envelope icon */}
-        <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-2xl transition-all ${
+        <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all ${
           isUnlocked && !isOpened ? 'bg-rose/10 animate-pulse' :
           isUnlocked ? 'bg-sage/10' :
           'bg-cream'
         }`}>
-          {isUnlocked && !isOpened ? '💌' : isUnlocked ? '📖' : '🔒'}
+          {isUnlocked && !isOpened
+            ? <MailOpen className="h-5 w-5 text-rose" />
+            : isUnlocked
+            ? <BookOpen className="h-5 w-5 text-sage-dark" />
+            : <Lock className="h-5 w-5 text-ink-muted" />}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -201,7 +205,9 @@ export default function LettersPage() {
           <div className="flex justify-center py-12"><div className="h-5 w-5 animate-spin rounded-full border-2 border-rose border-t-transparent" /></div>
         ) : displayed.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-            <div className="mb-3 text-4xl">{tab === 'diterima' ? '📭' : '✍️'}</div>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-cream">
+              {tab === 'diterima' ? <Inbox className="h-6 w-6 text-ink-muted" /> : <PenLine className="h-6 w-6 text-ink-muted" />}
+            </div>
             <p className="text-sm font-semibold text-ink">
               {tab === 'diterima' ? 'Belum ada surat untukmu' : 'Belum ada surat yang kamu tulis'}
             </p>
