@@ -220,6 +220,7 @@ export default function PartnerPage() {
         {coupleId && userId && (
           <WishlistSection
             items={wishlist} coupleId={coupleId} userId={userId}
+            userName={myProfile?.name ?? null} partnerId={partner?.id ?? null}
             partnerName={partner?.name ?? null} onRefresh={loadData}
           />
         )}

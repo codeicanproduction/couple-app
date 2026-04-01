@@ -40,6 +40,7 @@ export default function FinancePage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
   const [coupleId, setCoupleId] = useState<string | null>(null)
+  const [partnerId, setPartnerId] = useState<string | null>(null)
   const [partnerName, setPartnerName] = useState<string | null>(null)
   const [goal, setGoal] = useState<SavingsGoal | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -72,6 +73,7 @@ export default function FinancePage() {
     const { data: allMembers } = await supabase
       .from('couple_members').select('profile_id').eq('couple_id', membership.couple_id).neq('profile_id', user.id)
     if (allMembers?.[0]) {
+      setPartnerId(allMembers[0].profile_id)
       const { data: p } = await supabase.from('profiles').select('name').eq('id', allMembers[0].profile_id).single()
       setPartnerName(p?.name ?? null)
     }
@@ -274,6 +276,7 @@ export default function FinancePage() {
         <AddTransactionModal
           isOpen={addTxOpen} onClose={() => setAddTxOpen(false)}
           coupleId={coupleId} goalId={goal?.id ?? null} userId={userId}
+          userName={userName} partnerId={partnerId} goalName={goal?.name ?? null}
           onSuccess={loadData} initialType={addTxInitialType}
         />
       )}

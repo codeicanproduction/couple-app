@@ -22,6 +22,8 @@ interface WishlistSectionProps {
   items: WishlistItem[]
   coupleId: string
   userId: string
+  userName: string | null
+  partnerId: string | null
   partnerName: string | null
   onRefresh: () => void
 }
@@ -70,7 +72,7 @@ const CARD_THEMES = [
 const CARD_ICONS = [Gift, Star, Sparkles, Package, Heart]
 
 export default function WishlistSection({
-  items, coupleId, userId, partnerName, onRefresh,
+  items, coupleId, userId, userName, partnerId, partnerName, onRefresh,
 }: WishlistSectionProps) {
   const [tab, setTab] = useState<WishlistTab>('couple')
   const [newName, setNewName] = useState('')
@@ -110,6 +112,24 @@ export default function WishlistSection({
       link: newLink.trim() || null,
       owner_type: actualTab, owner_id: actualTab === 'personal' ? userId : null,
     })
+    // Notify partner about new wishlist item
+    if (partnerId) {
+      const name = userName || 'Pasanganmu'
+      const priceStr = newPrice ? ` (Rp ${newPrice})` : ''
+      try {
+        await fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: partnerId,
+            title: 'CoupleApp',
+            body: `${name} menambahkan "${newName.trim()}"${priceStr} ke wishlist`,
+            url: '/app/partner',
+          }),
+        })
+      } catch { /* optional */ }
+    }
+
     setNewName(''); setNewPrice(''); setNewLink(''); setShowForm(false)
     onRefresh()
     const { data } = await supabase

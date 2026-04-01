@@ -12,6 +12,9 @@ interface AddTransactionModalProps {
   coupleId: string
   goalId: string | null
   userId: string
+  userName: string | null
+  partnerId: string | null
+  goalName: string | null
   onSuccess: () => void
   initialType?: 'deposit' | 'withdrawal'
 }
@@ -31,8 +34,15 @@ function fmtQuick(n: number): string {
   return `${n / 1_000}rb`
 }
 
+function fmtRpNotif(n: number): string {
+  const abs = Math.abs(n)
+  if (abs >= 1_000_000) return `Rp${(abs / 1_000_000).toFixed(1)}jt`
+  if (abs >= 1_000) return `Rp${(abs / 1_000).toFixed(0)}rb`
+  return `Rp${abs.toLocaleString('id-ID')}`
+}
+
 export default function AddTransactionModal({
-  isOpen, onClose, coupleId, goalId, userId, onSuccess, initialType = 'deposit',
+  isOpen, onClose, coupleId, goalId, userId, userName, partnerId, goalName, onSuccess, initialType = 'deposit',
 }: AddTransactionModalProps) {
   const [type, setType] = useState<'deposit' | 'withdrawal'>(initialType)
   const [amount, setAmount] = useState('')
@@ -86,6 +96,29 @@ export default function AddTransactionModal({
       await supabase.from('savings_goals')
         .update({ current_amount: Math.max(0, balance) })
         .eq('id', goalId)
+    }
+
+    // Notify partner about the transaction
+    if (partnerId) {
+      const numAmt = parseInt(amount.replace(/\D/g, ''), 10)
+      const name = userName || 'Pasanganmu'
+      const target = goalName || 'tabungan'
+      const notifBody = type === 'deposit'
+        ? `${name} menambahkan ${fmtRpNotif(numAmt)} ke ${target}`
+        : `${name} mencatat pengeluaran ${fmtRpNotif(numAmt)}${note ? ` — ${note}` : ''}`
+
+      try {
+        await fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: partnerId,
+            title: 'CoupleApp',
+            body: notifBody,
+            url: '/app/finance',
+          }),
+        })
+      } catch { /* optional */ }
     }
 
     setLoading(false)
