@@ -715,7 +715,8 @@ export type Database = {
           couple_id: string
           created_at: string
           id: string
-          is_responded: boolean | null
+          receiver_id: string | null
+          responded: boolean | null
           responded_at: string | null
           sender_id: string
         }
@@ -723,7 +724,8 @@ export type Database = {
           couple_id: string
           created_at?: string
           id?: string
-          is_responded?: boolean | null
+          receiver_id?: string | null
+          responded?: boolean | null
           responded_at?: string | null
           sender_id: string
         }
@@ -731,7 +733,8 @@ export type Database = {
           couple_id?: string
           created_at?: string
           id?: string
-          is_responded?: boolean | null
+          receiver_id?: string | null
+          responded?: boolean | null
           responded_at?: string | null
           sender_id?: string
         }

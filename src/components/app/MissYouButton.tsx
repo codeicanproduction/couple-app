@@ -33,6 +33,7 @@ function isToday(dateStr: string): boolean {
 export default function MissYouButton({ myId, myName, partnerId, coupleId }: MissYouButtonProps) {
   const [sending, setSending] = useState(false)
   const [justSent, setJustSent] = useState(false)
+  const [pushStatus, setPushStatus] = useState<'idle' | 'sent' | 'no_sub'>('idle')
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null) // timestamp ms
   const [usedToday, setUsedToday] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -106,6 +107,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
     const { error } = await supabase.from('miss_you').insert({
       couple_id: coupleId!,
       sender_id: myId,
+      receiver_id: partnerId!,
     })
 
     if (!error) {
@@ -116,7 +118,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
 
       // Send push notification
       try {
-        await fetch('/api/push/send', {
+        const pushRes = await fetch('/api/push/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -126,7 +128,11 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
             url: '/app/home',
           }),
         })
-      } catch { /* push optional */ }
+        const pushData = await pushRes.json()
+        setPushStatus(pushData.sent > 0 ? 'sent' : 'no_sub')
+      } catch {
+        setPushStatus('no_sub')
+      }
     }
     setSending(false)
   }
@@ -189,8 +195,14 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
       </button>
 
       {justSent && (
-        <p className="mt-1.5 text-center text-xs text-ink-muted animate-fade-in">
-          Notifikasi terkirim ke pasangan 💌
+        <p className="mt-1.5 text-center text-xs animate-fade-in">
+          {pushStatus === 'sent' ? (
+            <span className="text-sage-dark">✅ Notifikasi terkirim ke pasangan!</span>
+          ) : pushStatus === 'no_sub' ? (
+            <span className="text-ink-muted">💕 Kangen terkirim! (pasangan belum aktifkan notifikasi)</span>
+          ) : (
+            <span className="text-ink-muted">💌 Mengirim...</span>
+          )}
         </p>
       )}
     </div>

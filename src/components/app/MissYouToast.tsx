@@ -15,7 +15,7 @@ interface MissYouToastProps {
 interface MissYouRow {
   id: string
   sender_id: string
-  is_responded: boolean | null
+  responded: boolean | null
   created_at: string
 }
 
@@ -39,13 +39,14 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
     if (!coupleId || !partnerId) return
     const supabase = createClient()
 
-    // Get most recent unresponded miss you FROM partner (identified by couple_id + sender_id)
+    // Get most recent unresponded miss you FROM partner to me
     const { data } = await supabase
       .from('miss_you')
-      .select('id, sender_id, is_responded, created_at')
+      .select('id, sender_id, responded, created_at')
       .eq('couple_id', coupleId)
       .eq('sender_id', partnerId)
-      .eq('is_responded', false)
+      .eq('receiver_id', myId)
+      .eq('responded', false)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -69,13 +70,14 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
     // Mark original as responded
     await supabase
       .from('miss_you')
-      .update({ is_responded: true, responded_at: new Date().toISOString() })
+      .update({ responded: true, responded_at: new Date().toISOString() })
       .eq('id', latestMissYou.id)
 
     // Send reciprocal miss you
     await supabase.from('miss_you').insert({
       couple_id: coupleId,
       sender_id: myId,
+      receiver_id: partnerId,
     })
 
     // Push notif back
