@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       {/* Sheet */}
       <div
         className={cn(
-          'relative w-full max-w-lg animate-slide-up rounded-t-3xl border-t border-border bg-surface px-6 pb-8 pt-5',
+          'relative w-full max-w-lg animate-slide-up rounded-t-3xl border-t border-border bg-surface px-6 pb-24 pt-5',
           className
         )}
       >
