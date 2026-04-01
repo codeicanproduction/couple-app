@@ -658,7 +658,7 @@ export type Database = {
           opened_at: string | null
           receiver_id: string
           sender_id: string
-          unlock_date: string
+          unlock_date: string  // timestamptz ISO string
         }
         Insert: {
           content: string
@@ -671,7 +671,7 @@ export type Database = {
           opened_at?: string | null
           receiver_id: string
           sender_id: string
-          unlock_date: string
+          unlock_date: string  // timestamptz ISO string
         }
         Update: {
           content?: string
@@ -684,7 +684,7 @@ export type Database = {
           opened_at?: string | null
           receiver_id?: string
           sender_id?: string
-          unlock_date?: string
+          unlock_date?: string  // timestamptz ISO string
         }
         Relationships: [
           {

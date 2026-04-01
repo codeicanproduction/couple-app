@@ -27,16 +27,40 @@ const OCCASION_LABELS: Record<string, string> = {
   custom: '✉️ Surat Spesial',
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+function formatWIB(isoStr: string, withTime = true): string {
+  return new Date(isoStr).toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+  }) + (withTime ? ' WIB' : '')
 }
 
-function daysUntil(dateStr: string): number {
-  const unlock = new Date(dateStr)
-  unlock.setHours(0, 0, 0, 0)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return Math.ceil((unlock.getTime() - today.getTime()) / 86400000)
+function formatDate(d: string) {
+  return formatWIB(d, false)
+}
+
+function timeUntil(isoStr: string): { days: number; hours: number; minutes: number; total: number } {
+  const diff = new Date(isoStr).getTime() - Date.now()
+  const total = Math.max(0, diff)
+  const days = Math.floor(total / 86400000)
+  const hours = Math.floor((total % 86400000) / 3600000)
+  const minutes = Math.floor((total % 3600000) / 60000)
+  return { days, hours, minutes, total }
+}
+
+function CountdownDisplay({ unlockDate }: { unlockDate: string }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60000)
+    return () => clearInterval(t)
+  }, [])
+
+  const { days, hours, minutes } = timeUntil(unlockDate)
+  if (days > 0) return <p className="mt-2 text-2xl font-extrabold text-rose">{days} hari {hours} jam lagi</p>
+  if (hours > 0) return <p className="mt-2 text-2xl font-extrabold text-rose">{hours} jam {minutes} menit lagi</p>
+  return <p className="mt-2 text-2xl font-extrabold text-rose">{minutes} menit lagi</p>
 }
 
 export default function LetterDetailPage() {
@@ -98,11 +122,12 @@ export default function LetterDetailPage() {
     )
   }
 
-  const days = daysUntil(letter.unlock_date)
-  const isUnlocked = days <= 0
+  const { total: msLeft } = timeUntil(letter.unlock_date)
+  const isUnlocked = msLeft <= 0
   const isMine = letter.sender_id === myId
   const isOpened = letter.is_opened
   const occasion = letter.occasion ? (OCCASION_LABELS[letter.occasion] ?? '✉️') : '✉️ Surat Rahasia'
+  const daysLeft = Math.ceil(msLeft / 86400000)
 
   // Sender view: sealed letter preview
   if (isMine && !isOpened) {
@@ -117,12 +142,12 @@ export default function LetterDetailPage() {
         <div className="px-6 pt-8 flex flex-col items-center text-center">
           <div className="mb-4 text-7xl">📬</div>
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted">{occasion}</p>
-          <p className="mt-2 text-lg font-bold text-ink">Untuk {senderName === (myId ? 'aku' : senderName) ? 'Pasangan' : senderName}</p>
+          <p className="mt-2 text-lg font-bold text-ink">Untuk {senderName}</p>
           <div className="mt-4 rounded-2xl border border-border bg-cream px-6 py-4 text-center">
             <Lock className="mx-auto mb-2 h-5 w-5 text-ink-muted" />
             <p className="text-sm text-ink-muted">Bisa dibuka mulai</p>
-            <p className="mt-1 text-base font-bold text-ink">{formatDate(letter.unlock_date)}</p>
-            {days > 0 && <p className="mt-1 text-xs text-rose font-semibold">{days} hari lagi</p>}
+            <p className="mt-1 text-base font-bold text-ink">{formatWIB(letter.unlock_date)}</p>
+            {!isUnlocked && <p className="mt-1 text-xs text-rose font-semibold">{daysLeft > 0 ? `${daysLeft} hari lagi` : 'Kurang dari 1 hari'}</p>}
           </div>
           <p className="mt-6 text-xs text-ink-muted max-w-xs">
             Surat sudah dikirim. Pasangan akan menerima notifikasi saat surat terbuka.
@@ -144,7 +169,7 @@ export default function LetterDetailPage() {
         <div className="px-6 pt-8 flex flex-col items-center text-center">
           <div
             className="relative mb-4 text-8xl"
-            style={{ filter: days <= 7 ? 'drop-shadow(0 0 12px rgba(224,122,158,0.6))' : undefined }}
+            style={{ filter: daysLeft <= 7 ? 'drop-shadow(0 0 12px rgba(224,122,158,0.6))' : undefined }}
           >
             🔒
           </div>
@@ -152,13 +177,18 @@ export default function LetterDetailPage() {
           <p className="mt-2 text-lg font-bold text-ink">Dari {senderName}</p>
           <div className="mt-4 w-full rounded-2xl bg-rose/5 border border-rose/20 px-6 py-5 text-center">
             <p className="text-sm text-ink-muted">Terkunci sampai</p>
-            <p className="mt-1 text-xl font-bold text-ink">{formatDate(letter.unlock_date)}</p>
-            <p className="mt-2 text-2xl font-extrabold text-rose">{days} hari lagi</p>
+            <p className="mt-1 text-xl font-bold text-ink">{formatWIB(letter.unlock_date)}</p>
+            <CountdownDisplay unlockDate={letter.unlock_date} />
           </div>
-          {days <= 7 && (
+          {daysLeft <= 7 && daysLeft > 0 && (
             <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
               <p className="text-sm font-semibold text-amber-700">✨ Hampir terbuka!</p>
-              <p className="text-xs text-amber-600 mt-0.5">Surat ini akan terbuka dalam {days} hari</p>
+              <p className="text-xs text-amber-600 mt-0.5">Surat ini akan terbuka dalam {daysLeft} hari</p>
+            </div>
+          )}
+          {daysLeft === 0 && (
+            <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+              <p className="text-sm font-semibold text-amber-700">✨ Hampir terbuka hari ini!</p>
             </div>
           )}
         </div>
@@ -188,7 +218,7 @@ export default function LetterDetailPage() {
           {isMine ? `Suratmu untuk Pasangan` : `Dari ${senderName}`}
         </h1>
         <p className="text-xs text-ink-muted mt-0.5">
-          Ditulis {formatDate(letter.created_at!)} · Dibuka {formatDate(letter.unlock_date)}
+          Ditulis {formatDate(letter.created_at!)} · Dibuka {formatWIB(letter.unlock_date)}
         </p>
       </div>
 
@@ -218,7 +248,7 @@ export default function LetterDetailPage() {
           </div>
           {letter.opened_at && !isMine && (
             <p className="mt-3 text-center text-xs text-ink-muted">
-              Dibaca pada {formatDate(letter.opened_at)}
+              Dibaca pada {formatWIB(letter.opened_at)}
             </p>
           )}
         </div>

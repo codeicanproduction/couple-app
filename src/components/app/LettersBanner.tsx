@@ -18,14 +18,14 @@ export default function LettersBanner({ myId, coupleId }: LettersBannerProps) {
   const checkLetters = useCallback(async () => {
     if (!coupleId) { setLoading(false); return }
     const supabase = createClient()
-    const today = new Date().toISOString().split('T')[0]
+    const now = new Date().toISOString()
 
     const { count } = await supabase
       .from('letters')
       .select('*', { count: 'exact', head: true })
       .eq('receiver_id', myId)
       .eq('is_opened', false)
-      .lte('unlock_date', today)
+      .lte('unlock_date', now)
 
     setReadyCount(count ?? 0)
     setLoading(false)

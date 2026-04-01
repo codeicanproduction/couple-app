@@ -15,13 +15,41 @@ const OCCASIONS = [
 ]
 
 const MAX_CHARS = 2000
-const MIN_LOCK_DAYS = 7
+const WIB_OFFSET = 7 // UTC+7
 
-function addDays(date: Date, days: number): string {
-  const d = new Date(date)
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+/** Get today's date string in WIB (YYYY-MM-DD) */
+function todayWIB(): string {
+  const now = new Date()
+  const wib = new Date(now.getTime() + WIB_OFFSET * 3600 * 1000)
+  return wib.toISOString().split('T')[0]
 }
+
+/** Build a timestamptz string from WIB date + hour */
+function buildUnlockTimestamp(dateStr: string, hour: number): string {
+  // dateStr is YYYY-MM-DD in WIB; hour is 0-23 WIB
+  // Convert to UTC by subtracting 7h
+  const utcHour = hour - WIB_OFFSET
+  const date = new Date(`${dateStr}T00:00:00Z`)
+  date.setUTCHours(date.getUTCHours() + utcHour)
+  return date.toISOString()
+}
+
+/** Format a timestamptz for display in WIB */
+function formatWIB(isoStr: string): string {
+  return new Date(isoStr).toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }) + ' WIB'
+}
+
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
+  value: i,
+  label: `${String(i).padStart(2, '0')}:00`,
+}))
 
 export default function WriteLetter() {
   const router = useRouter()
@@ -31,14 +59,15 @@ export default function WriteLetter() {
   const [myId, setMyId] = useState<string | null>(null)
 
   const [occasion, setOccasion] = useState('anniversary')
-  const [unlockDate, setUnlockDate] = useState(addDays(new Date(), 30))
+  const [unlockDate, setUnlockDate] = useState(todayWIB())
+  const [unlockHour, setUnlockHour] = useState(7) // 07:00 WIB default
   const [content, setContent] = useState('')
   const [pendingCount, setPendingCount] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
 
-  const minDate = addDays(new Date(), MIN_LOCK_DAYS)
+  const minDate = todayWIB()
 
   const loadData = useCallback(async () => {
     const supabase = createClient()
@@ -57,12 +86,13 @@ export default function WriteLetter() {
       if (pp?.name) setPartnerName(pp.name)
     }
 
-    // Count pending letters from me
     const { count } = await supabase.from('letters').select('*', { count: 'exact', head: true }).eq('sender_id', user.id).eq('is_opened', false)
     setPendingCount(count ?? 0)
   }, [])
 
   useEffect(() => { loadData() }, [loadData])
+
+  const unlockTimestamp = buildUnlockTimestamp(unlockDate, unlockHour)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -70,9 +100,14 @@ export default function WriteLetter() {
 
     if (!content.trim()) { setError('Tulis isi suratnya dulu ya'); return }
     if (content.length > MAX_CHARS) { setError('Surat terlalu panjang (maks 2000 karakter)'); return }
-    if (unlockDate < minDate) { setError(`Tanggal buka minimal ${MIN_LOCK_DAYS} hari dari sekarang`); return }
     if (pendingCount >= 10) { setError('Kamu sudah punya 10 surat terkunci. Tunggu beberapa surat terbuka dulu'); return }
     if (!partnerId || !coupleId || !myId) { setError('Belum terhubung dengan pasangan'); return }
+
+    // Validate unlock time is not in the past
+    if (new Date(unlockTimestamp) <= new Date()) {
+      setError('Waktu buka harus di masa depan')
+      return
+    }
 
     setSubmitting(true)
     const supabase = createClient()
@@ -83,7 +118,7 @@ export default function WriteLetter() {
       receiver_id: partnerId,
       content: content.trim(),
       occasion,
-      unlock_date: unlockDate,
+      unlock_date: unlockTimestamp,
     })
 
     if (insertError) { setError(insertError.message); setSubmitting(false); return }
@@ -96,7 +131,7 @@ export default function WriteLetter() {
         body: JSON.stringify({
           recipientId: partnerId,
           title: '📬 Ada surat rahasia!',
-          body: `Kamu punya surat yang bisa dibuka ${new Date(unlockDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+          body: `Kamu punya surat yang bisa dibuka ${formatWIB(unlockTimestamp)}`,
           url: '/app/letters',
         }),
       })
@@ -113,7 +148,8 @@ export default function WriteLetter() {
         <h2 className="text-2xl font-bold text-ink">Surat Terkunci!</h2>
         <p className="mt-3 text-sm text-ink-muted leading-relaxed">
           Suratmu untuk {partnerName} sudah tersimpan dan terkunci.<br />
-          Mereka bisa membacanya pada <span className="font-semibold text-rose">{new Date(unlockDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>.
+          Mereka bisa membacanya pada{' '}
+          <span className="font-semibold text-rose">{formatWIB(unlockTimestamp)}</span>.
         </p>
         <button
           onClick={() => router.push('/app/letters')}
@@ -132,7 +168,7 @@ export default function WriteLetter() {
           <ArrowLeft className="h-4 w-4" /> Surat Rahasia
         </button>
         <h1 className="text-xl font-bold text-ink">Tulis Surat untuk {partnerName}</h1>
-        <p className="text-sm text-ink-muted">Akan terkunci sampai tanggal yang kamu pilih</p>
+        <p className="text-sm text-ink-muted">Akan terkunci sampai waktu yang kamu pilih</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 px-6 pt-5">
@@ -158,19 +194,35 @@ export default function WriteLetter() {
           </div>
         </div>
 
-        {/* Unlock date */}
+        {/* Unlock date + time */}
         <div>
           <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-muted">
-            Bisa Dibuka Mulai
+            Bisa Dibuka Mulai (Waktu Jakarta)
           </label>
-          <input
-            type="date"
-            value={unlockDate}
-            min={minDate}
-            onChange={e => setUnlockDate(e.target.value)}
-            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-ink focus:border-rose focus:outline-none"
-          />
-          <p className="mt-1 text-xs text-ink-muted">Minimal {MIN_LOCK_DAYS} hari dari sekarang</p>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={unlockDate}
+              min={minDate}
+              onChange={e => setUnlockDate(e.target.value)}
+              className="flex-1 rounded-xl border border-border bg-white px-4 py-3 text-sm text-ink focus:border-rose focus:outline-none"
+            />
+            <select
+              value={unlockHour}
+              onChange={e => setUnlockHour(Number(e.target.value))}
+              className="w-28 rounded-xl border border-border bg-white px-3 py-3 text-sm text-ink focus:border-rose focus:outline-none"
+            >
+              {HOUR_OPTIONS.map(h => (
+                <option key={h.value} value={h.value}>{h.label} WIB</option>
+              ))}
+            </select>
+          </div>
+          <p className="mt-1.5 text-xs text-ink-muted">
+            Akan terbuka: <span className="font-medium text-ink">{formatWIB(unlockTimestamp)}</span>
+          </p>
+          {new Date(unlockTimestamp) <= new Date() && (
+            <p className="mt-1 text-xs text-rose font-medium">⚠️ Waktu sudah lewat, pilih waktu yang akan datang</p>
+          )}
         </div>
 
         {/* Content */}
@@ -201,7 +253,7 @@ export default function WriteLetter() {
 
         <button
           type="submit"
-          disabled={submitting || !content.trim() || pendingCount >= 10}
+          disabled={submitting || !content.trim() || pendingCount >= 10 || new Date(unlockTimestamp) <= new Date()}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose py-4 text-sm font-bold text-white shadow-elevated transition-all active:scale-[0.98] disabled:opacity-50"
         >
           <Lock className="h-4 w-4" />

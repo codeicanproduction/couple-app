@@ -26,23 +26,36 @@ const OCCASION_LABELS: Record<string, string> = {
   custom: '✉️ Surat Spesial',
 }
 
-function daysUntil(dateStr: string): number {
-  const unlock = new Date(dateStr)
-  unlock.setHours(0, 0, 0, 0)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return Math.ceil((unlock.getTime() - today.getTime()) / 86400000)
+function msUntil(isoStr: string): number {
+  return new Date(isoStr).getTime() - Date.now()
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+function formatWIB(isoStr: string): string {
+  return new Date(isoStr).toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }) + ' WIB'
+}
+
+function countdownLabel(isoStr: string): string {
+  const ms = msUntil(isoStr)
+  if (ms <= 0) return 'Sudah terbuka'
+  const days = Math.floor(ms / 86400000)
+  const hours = Math.floor((ms % 86400000) / 3600000)
+  if (days > 0) return `${days} hari ${hours} jam lagi`
+  const mins = Math.floor((ms % 3600000) / 60000)
+  if (hours > 0) return `${hours} jam ${mins} menit lagi`
+  return `${mins} menit lagi`
 }
 
 export default function LettersPage() {
   const router = useRouter()
   const [myId, setMyId] = useState<string | null>(null)
   const [partnerName, setPartnerName] = useState<string>('Pasangan')
-  const [myName, setMyName] = useState<string>('Kamu')
   const [letters, setLetters] = useState<Letter[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'diterima' | 'dikirim'>('diterima')
@@ -52,9 +65,6 @@ export default function LettersPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     setMyId(user.id)
-
-    const { data: myProfile } = await supabase.from('profiles').select('name').eq('id', user.id).single()
-    if (myProfile?.name) setMyName(myProfile.name)
 
     const { data: membership } = await supabase.from('couple_members').select('couple_id').eq('profile_id', user.id).single()
     if (!membership?.couple_id) { setLoading(false); return }
@@ -69,7 +79,7 @@ export default function LettersPage() {
       .from('letters')
       .select('id, sender_id, receiver_id, occasion, occasion_label, unlock_date, is_opened, created_at, content')
       .eq('couple_id', membership.couple_id)
-      .order('created_at', { ascending: false })
+      .order('unlock_date', { ascending: true })
 
     setLetters((data ?? []) as Letter[])
     setLoading(false)
@@ -81,17 +91,20 @@ export default function LettersPage() {
   const sent = letters.filter(l => l.sender_id === myId)
   const displayed = tab === 'diterima' ? received : sent
 
-  // Badge: locked letters about to unlock (within 7 days)
+  // Badge: letters ready to open (unlocked but not opened yet)
+  const readyToOpen = received.filter(l => msUntil(l.unlock_date) <= 0 && !l.is_opened).length
+  // Badge: letters unlocking within 24h
   const soonUnlocking = received.filter(l => {
-    const d = daysUntil(l.unlock_date)
-    return d >= 0 && d <= 7 && !l.is_opened
+    const ms = msUntil(l.unlock_date)
+    return ms > 0 && ms <= 86400000 * 7 && !l.is_opened
   }).length
 
   function renderLetter(letter: Letter) {
-    const days = daysUntil(letter.unlock_date)
-    const isUnlocked = days <= 0
+    const ms = msUntil(letter.unlock_date)
+    const isUnlocked = ms <= 0
     const isMine = letter.sender_id === myId
     const isOpened = letter.is_opened
+    const daysLeft = Math.ceil(ms / 86400000)
 
     const occasion = letter.occasion ? (OCCASION_LABELS[letter.occasion] ?? '✉️ Surat') : '✉️ Surat Rahasia'
 
@@ -116,13 +129,13 @@ export default function LettersPage() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <p className="text-xs font-semibold text-ink-muted">{occasion}</p>
             {isUnlocked && !isOpened && (
               <span className="rounded-full bg-rose px-2 py-0.5 text-[10px] font-bold text-white">BUKA!</span>
             )}
-            {days > 0 && days <= 7 && !isMine && (
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">{days} hari lagi</span>
+            {!isUnlocked && !isMine && daysLeft <= 7 && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">{countdownLabel(letter.unlock_date)}</span>
             )}
           </div>
           <p className="text-sm font-bold text-ink">
@@ -130,11 +143,11 @@ export default function LettersPage() {
           </p>
           <p className="mt-0.5 text-xs text-ink-muted">
             {isUnlocked ? (
-              isOpened ? `Dibuka ${formatDate(letter.unlock_date)}` : `Bisa dibuka sekarang!`
+              isOpened ? `Dibuka ${formatWIB(letter.unlock_date)}` : `Bisa dibuka sekarang!`
             ) : (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                Buka {formatDate(letter.unlock_date)} · {days} hari lagi
+                <Clock className="h-3 w-3 flex-shrink-0" />
+                <span>{formatWIB(letter.unlock_date)} · {countdownLabel(letter.unlock_date)}</span>
               </span>
             )}
           </p>
@@ -144,6 +157,8 @@ export default function LettersPage() {
       </button>
     )
   }
+
+  const badgeCount = readyToOpen > 0 ? readyToOpen : soonUnlocking
 
   return (
     <div className="animate-fade-in pb-6">
@@ -174,8 +189,8 @@ export default function LettersPage() {
           >
             {t === 'diterima' ? <MailOpen className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
             {t === 'diterima' ? 'Untukku' : 'Dariku'}
-            {t === 'diterima' && soonUnlocking > 0 && (
-              <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose text-[10px] font-bold text-white">{soonUnlocking}</span>
+            {t === 'diterima' && badgeCount > 0 && (
+              <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose text-[10px] font-bold text-white">{badgeCount}</span>
             )}
           </button>
         ))}
