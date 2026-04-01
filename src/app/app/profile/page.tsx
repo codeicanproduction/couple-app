@@ -50,9 +50,16 @@ export default function ProfilePage() {
       .from('couple_members').select('couple_id').eq('profile_id', user.id).single()
 
     if (membership?.couple_id) {
-      const { data: couple } = await supabase
-        .from('couples').select('invite_code').eq('id', membership.couple_id).single()
-      setInviteCode(couple?.invite_code ?? null)
+      // Check if partner exists — if so, don't show invite code
+      const { data: allMembers } = await supabase
+        .from('couple_members').select('profile_id').eq('couple_id', membership.couple_id)
+      const hasPartner = (allMembers?.length ?? 0) >= 2
+
+      if (!hasPartner) {
+        const { data: couple } = await supabase
+          .from('couples').select('invite_code').eq('id', membership.couple_id).single()
+        setInviteCode(couple?.invite_code ?? null)
+      }
 
       const { data: assessment } = await supabase
         .from('assessment_results').select('scores')

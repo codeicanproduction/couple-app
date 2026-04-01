@@ -752,6 +752,53 @@ export type Database = {
           },
         ]
       }
+      wedding_budget_items: {
+        Row: {
+          id: string
+          couple_id: string
+          category: string
+          name: string
+          estimated_cost: number
+          actual_cost: number | null
+          is_paid: boolean
+          notes: string | null
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          couple_id: string
+          category: string
+          name: string
+          estimated_cost?: number
+          actual_cost?: number | null
+          is_paid?: boolean
+          notes?: string | null
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          couple_id?: string
+          category?: string
+          name?: string
+          estimated_cost?: number
+          actual_cost?: number | null
+          is_paid?: boolean
+          notes?: string | null
+          sort_order?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_budget_items_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlist_items: {
         Row: {
           couple_id: string
