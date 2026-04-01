@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, MessageCircleHeart, Users, BarChart3, ChevronRight, Heart } from 'lucide-react'
+import { LayoutDashboard, MessageCircleHeart, Users, Bell, ChevronRight, Heart } from 'lucide-react'
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/deep-talk', label: 'Deep Talk', icon: MessageCircleHeart, exact: false },
+  { href: '/admin/notifications', label: 'Notifikasi', icon: Bell, exact: false },
   { href: '/admin/users', label: 'Pengguna', icon: Users, exact: false },
 ]
 

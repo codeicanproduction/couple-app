@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, Heart, MessageCircleHeart, ChevronRight } from 'lucide-react'
+import { Users, Heart, MessageCircleHeart, Bell, ChevronRight } from 'lucide-react'
 import { getAdminStats } from '@/lib/admin'
 
 export default function AdminDashboard() {
@@ -53,6 +53,7 @@ export default function AdminDashboard() {
         <div className="divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {[
             { href: '/admin/deep-talk', label: 'Deep Talk Packs', desc: 'Kelola pack, level, dan pertanyaan', icon: MessageCircleHeart },
+            { href: '/admin/notifications', label: 'Push Notifications', desc: 'Test & broadcast notifikasi', icon: Bell },
             { href: '/admin/users', label: 'Pengguna', desc: 'Kelola akun dan role pengguna', icon: Users },
           ].map(item => {
             const Icon = item.icon
