@@ -1,13 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import {
-  questions,
-  DIMENSION_LABELS,
-  DIMENSION_ICONS,
-  type Dimension,
-} from '@/data/questions'
+  MessageCircle, Compass, Wallet, Users, Heart,
+  ArrowRight, RotateCcw, TrendingUp, Sprout,
+} from 'lucide-react'
+import { questions, DIMENSION_LABELS, type Dimension } from '@/data/questions'
+import { createClient } from '@/lib/supabase'
+
+const DIMENSION_ICON_MAP: Record<Dimension, React.ElementType> = {
+  komunikasi: MessageCircle,
+  nilai_visi: Compass,
+  keuangan: Wallet,
+  keluarga: Users,
+  komitmen: Heart,
+}
 
 interface DimensionScore {
   dimension: Dimension
@@ -17,13 +25,7 @@ interface DimensionScore {
 }
 
 function calculateScores(answers: Record<number, number | string>): DimensionScore[] {
-  const dimensions: Dimension[] = [
-    'komunikasi',
-    'nilai_visi',
-    'keuangan',
-    'keluarga',
-    'komitmen',
-  ]
+  const dimensions: Dimension[] = ['komunikasi', 'nilai_visi', 'keuangan', 'keluarga', 'komitmen']
 
   return dimensions.map((dim) => {
     const dimQuestions = questions.filter((q) => q.dimension === dim)
@@ -36,18 +38,12 @@ function calculateScores(answers: Record<number, number | string>): DimensionSco
         score += typeof answer === 'number' ? answer : 3
         maxScore += 5
       } else if (q.type === 'priority') {
-        // Priority questions always score 3/5 (neutral - they measure alignment, not readiness)
         score += 3
         maxScore += 5
       }
     })
 
-    return {
-      dimension: dim,
-      score,
-      maxScore,
-      percentage: maxScore > 0 ? Math.round((score / maxScore) * 100) : 0,
-    }
+    return { dimension: dim, score, maxScore, percentage: maxScore > 0 ? Math.round((score / maxScore) * 100) : 0 }
   })
 }
 
@@ -58,29 +54,25 @@ function getOverallScore(scores: DimensionScore[]): number {
 }
 
 function getScoreLabel(percentage: number): string {
-  if (percentage >= 80) return 'Sangat Siap! 🎉'
-  if (percentage >= 60) return 'Cukup Siap 👍'
-  if (percentage >= 40) return 'Perlu Diskusi 💬'
-  return 'Masih Perlu Waktu 🌱'
+  if (percentage >= 80) return 'Sangat Siap!'
+  if (percentage >= 60) return 'Cukup Siap'
+  if (percentage >= 40) return 'Perlu Diskusi'
+  return 'Masih Perlu Waktu'
 }
 
-function getScoreColor(percentage: number): string {
-  if (percentage >= 80) return 'text-green-600'
-  if (percentage >= 60) return 'text-emerald-600'
-  if (percentage >= 40) return 'text-amber-600'
-  return 'text-red-500'
-}
-
-function getBarColor(percentage: number): string {
-  if (percentage >= 80) return 'bg-green-500'
-  if (percentage >= 60) return 'bg-emerald-500'
-  if (percentage >= 40) return 'bg-amber-500'
-  return 'bg-red-400'
+function getScoreStyle(percentage: number) {
+  if (percentage >= 80) return { text: 'text-sage-dark', bg: 'bg-sage/10', bar: 'bg-sage' }
+  if (percentage >= 60) return { text: 'text-sage', bg: 'bg-sage/10', bar: 'bg-sage-light' }
+  if (percentage >= 40) return { text: 'text-gold-dark', bg: 'bg-gold/10', bar: 'bg-gold' }
+  return { text: 'text-danger', bg: 'bg-danger/10', bar: 'bg-danger' }
 }
 
 export default function ResultsPage() {
   const [scores, setScores] = useState<DimensionScore[]>([])
   const [overall, setOverall] = useState(0)
+  const [mounted, setMounted] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const saveAttempted = useRef(false)
 
   useEffect(() => {
     const stored = sessionStorage.getItem('assessment_answers')
@@ -89,18 +81,63 @@ export default function ResultsPage() {
       const calculated = calculateScores(answers)
       setScores(calculated)
       setOverall(getOverallScore(calculated))
+
+      // Save to Supabase (only once)
+      if (!saveAttempted.current) {
+        saveAttempted.current = true
+        saveToSupabase(answers, calculated)
+      }
     }
+    setMounted(true)
   }, [])
+
+  async function saveToSupabase(
+    answers: Record<number, number | string>,
+    calculatedScores: DimensionScore[]
+  ) {
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return // Not logged in — skip saving (guest mode)
+
+      // Get couple_id
+      const { data: membership } = await supabase
+        .from('couple_members')
+        .select('couple_id')
+        .eq('profile_id', user.id)
+        .single()
+
+      // Build scores object: { "Komunikasi": 4.2, "Nilai & Visi": 3.8, ... }
+      const scoresObj: Record<string, number> = {}
+      calculatedScores.forEach(s => {
+        scoresObj[DIMENSION_LABELS[s.dimension]] = Number((s.score / s.maxScore * 5).toFixed(1))
+      })
+
+      await supabase.from('assessment_results').insert({
+        profile_id: user.id,
+        couple_id: membership?.couple_id ?? null,
+        answers,
+        scores: scoresObj,
+      })
+
+      setSaved(true)
+    } catch {
+      // Silently fail — results are still visible from sessionStorage
+    }
+  }
+
+  if (!mounted) return null
 
   if (scores.length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6">
-        <p className="mb-4 text-gray-500">Belum ada hasil assessment.</p>
-        <Link
-          href="/assessment"
-          className="rounded-full bg-primary-500 px-6 py-3 font-semibold text-white"
-        >
-          Mulai Assessment
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
+          <Heart className="h-6 w-6 text-rose" strokeWidth={1.5} />
+        </div>
+        <p className="mb-6 text-sm text-ink-muted">Belum ada hasil assessment.</p>
+        <Link href="/app/assessment"
+          className="inline-flex items-center gap-2 rounded-2xl bg-rose px-6 py-3 text-sm font-semibold text-white shadow-elevated">
+          Mulai Assessment <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     )
@@ -108,63 +145,70 @@ export default function ResultsPage() {
 
   const strengths = scores.filter((s) => s.percentage >= 60)
   const growthAreas = scores.filter((s) => s.percentage < 60)
+  const style = getScoreStyle(overall)
 
   return (
     <div className="min-h-screen px-6 py-8">
+      {/* Saved indicator */}
+      {saved && (
+        <div className="mb-4 rounded-xl bg-sage/10 px-4 py-2 text-center text-xs font-medium text-sage-dark">
+          Hasil tersimpan di profilmu
+        </div>
+      )}
+
       {/* Overall score */}
-      <div className="mb-8 rounded-2xl bg-gradient-to-br from-primary-50 to-pink-50 p-6 text-center">
-        <p className="mb-2 text-sm font-medium text-gray-500">
-          Skor Kesiapan Kamu
-        </p>
-        <p className={`text-6xl font-bold ${getScoreColor(overall)}`}>
-          {overall}%
-        </p>
-        <p className={`mt-2 text-lg font-semibold ${getScoreColor(overall)}`}>
-          {getScoreLabel(overall)}
-        </p>
+      <div className="animate-scale-in mb-8 rounded-2xl border border-border bg-surface p-8 text-center shadow-card">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-muted">Skor Kesiapan</p>
+        <p className={`text-5xl font-bold ${style.text}`}>{overall}%</p>
+        <p className={`mt-2 text-sm font-semibold ${style.text}`}>{getScoreLabel(overall)}</p>
       </div>
 
       {/* Per-dimension breakdown */}
-      <h3 className="mb-4 text-lg font-semibold text-gray-800">
-        Breakdown per Dimensi
-      </h3>
-      <div className="mb-8 space-y-4">
-        {scores.map((s) => (
-          <div key={s.dimension} className="rounded-xl bg-gray-50 p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="font-medium text-gray-700">
-                {DIMENSION_ICONS[s.dimension]} {DIMENSION_LABELS[s.dimension]}
-              </span>
-              <span className={`font-bold ${getScoreColor(s.percentage)}`}>
-                {s.percentage}%
-              </span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-              <div
-                className={`h-full rounded-full transition-all duration-700 ${getBarColor(s.percentage)}`}
-                style={{ width: `${s.percentage}%` }}
-              />
-            </div>
-          </div>
-        ))}
+      <div className="animate-slide-up mb-8">
+        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink-muted">Breakdown per Dimensi</h3>
+        <div className="space-y-3">
+          {scores.map((s) => {
+            const Icon = DIMENSION_ICON_MAP[s.dimension]
+            const dimStyle = getScoreStyle(s.percentage)
+            return (
+              <div key={s.dimension} className="rounded-2xl border border-border bg-surface p-4 shadow-card">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50">
+                      <Icon className="h-4 w-4 text-rose" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-sm font-semibold text-ink">{DIMENSION_LABELS[s.dimension]}</span>
+                  </div>
+                  <span className={`text-sm font-bold ${dimStyle.text}`}>{s.percentage}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-border">
+                  <div className={`h-full rounded-full transition-all duration-700 ease-out ${dimStyle.bar}`} style={{ width: `${s.percentage}%` }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Strengths */}
       {strengths.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-3 text-lg font-semibold text-gray-800">
-            💪 Kekuatan Kalian
-          </h3>
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-sage" strokeWidth={1.5} />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Kekuatan Kalian</h3>
+          </div>
           <div className="space-y-2">
-            {strengths.map((s) => (
-              <div
-                key={s.dimension}
-                className="rounded-lg bg-green-50 px-4 py-3 text-green-700"
-              >
-                {DIMENSION_ICONS[s.dimension]} {DIMENSION_LABELS[s.dimension]} —
-                kalian sudah di jalur yang tepat!
-              </div>
-            ))}
+            {strengths.map((s) => {
+              const Icon = DIMENSION_ICON_MAP[s.dimension]
+              return (
+                <div key={s.dimension} className="flex items-center gap-3 rounded-2xl border border-sage/20 bg-sage/5 px-4 py-3">
+                  <Icon className="h-4 w-4 shrink-0 text-sage" strokeWidth={1.5} />
+                  <p className="text-sm text-sage-dark">
+                    <span className="font-semibold">{DIMENSION_LABELS[s.dimension]}</span> — kalian sudah di jalur yang tepat!
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -172,36 +216,35 @@ export default function ResultsPage() {
       {/* Growth areas */}
       {growthAreas.length > 0 && (
         <div className="mb-8">
-          <h3 className="mb-3 text-lg font-semibold text-gray-800">
-            🌱 Area untuk Bertumbuh
-          </h3>
+          <div className="mb-3 flex items-center gap-2">
+            <Sprout className="h-4 w-4 text-gold-dark" strokeWidth={1.5} />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Area untuk Bertumbuh</h3>
+          </div>
           <div className="space-y-2">
-            {growthAreas.map((s) => (
-              <div
-                key={s.dimension}
-                className="rounded-lg bg-amber-50 px-4 py-3 text-amber-700"
-              >
-                {DIMENSION_ICONS[s.dimension]} {DIMENSION_LABELS[s.dimension]} —
-                coba diskusikan lebih dalam bersama pasangan.
-              </div>
-            ))}
+            {growthAreas.map((s) => {
+              const Icon = DIMENSION_ICON_MAP[s.dimension]
+              return (
+                <div key={s.dimension} className="flex items-center gap-3 rounded-2xl border border-gold/20 bg-gold/5 px-4 py-3">
+                  <Icon className="h-4 w-4 shrink-0 text-gold-dark" strokeWidth={1.5} />
+                  <p className="text-sm text-gold-dark">
+                    <span className="font-semibold">{DIMENSION_LABELS[s.dimension]}</span> — coba diskusikan lebih dalam bersama pasangan.
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
 
-      {/* CTA */}
+      {/* CTAs */}
       <div className="space-y-3 pb-8">
-        <Link
-          href="/assessment"
-          className="block rounded-full bg-primary-500 px-6 py-3 text-center font-semibold text-white transition hover:bg-primary-600"
-        >
-          Ulangi Assessment
+        <Link href="/app/home"
+          className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-rose px-6 py-3.5 text-sm font-semibold text-white shadow-elevated transition-all hover:bg-rose-dark active:scale-[0.98]">
+          Kembali ke Beranda <ArrowRight className="h-4 w-4" />
         </Link>
-        <Link
-          href="/"
-          className="block rounded-full border-2 border-gray-200 px-6 py-3 text-center font-semibold text-gray-600 transition hover:border-gray-300"
-        >
-          Kembali ke Beranda
+        <Link href="/app/assessment"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-semibold text-ink-light shadow-card transition-all active:scale-[0.98]">
+          <RotateCcw className="h-4 w-4" /> Ulangi Assessment
         </Link>
       </div>
     </div>

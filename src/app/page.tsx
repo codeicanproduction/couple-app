@@ -1,67 +1,142 @@
 import Link from 'next/link'
+import {
+  Heart,
+  Wallet,
+  CalendarDays,
+  MessageCircle,
+  ArrowRight,
+  Sparkles,
+  Shield,
+  Smartphone,
+} from 'lucide-react'
 
-export default function Home() {
+const PILLARS = [
+  {
+    icon: Heart,
+    title: 'Hubungan',
+    desc: 'Assessment kesiapan, pertanyaan harian, dan tips untuk pasangan',
+    color: 'bg-rose/10 text-rose',
+  },
+  {
+    icon: Wallet,
+    title: 'Keuangan',
+    desc: 'Target tabungan bersama, catatan bulanan, dan wishlist',
+    color: 'bg-gold/20 text-yellow-700',
+  },
+  {
+    icon: CalendarDays,
+    title: 'Kalender',
+    desc: 'Tanggal penting, pengingat anniversary & ulang tahun',
+    color: 'bg-sage/20 text-sage-dark',
+  },
+]
+
+const TRUST_POINTS = [
+  { icon: Shield, text: 'Privat & aman' },
+  { icon: Smartphone, text: 'Bisa dipasang di homescreen' },
+  { icon: Sparkles, text: 'Gratis untuk memulai' },
+]
+
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
-      <div className="text-center">
-        <div className="mb-6 text-6xl">💑</div>
-        <h1 className="mb-3 text-4xl font-bold text-gray-900">
-          Couple App
-        </h1>
-        <p className="mb-2 text-lg text-primary-600 font-semibold">
-          Kesiapan Assessment
-        </p>
-        <p className="mb-8 text-gray-500 leading-relaxed">
-          Cek seberapa siap kamu dan pasangan untuk melangkah ke tahap
-          berikutnya. 15 pertanyaan, 8 menit, hasil yang jujur.
-        </p>
-
-        <Link
-          href="/assessment"
-          className="inline-block rounded-full bg-primary-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-primary-600 hover:shadow-xl active:scale-95"
-        >
-          Mulai Assessment
-        </Link>
-
-        <div className="mt-12 space-y-4 text-sm text-gray-400">
-          <div className="flex items-center justify-center gap-6">
-            <div className="flex items-center gap-2">
-              <span>⏱️</span>
-              <span>~8 menit</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>📊</span>
-              <span>5 dimensi</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>🔒</span>
-              <span>Privat</span>
-            </div>
+    <div className="flex min-h-screen flex-col">
+      {/* ===== Hero ===== */}
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-16 text-center">
+        {/* Logo */}
+        <div className="animate-fade-in mb-6">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-rose/10 shadow-glow">
+            <Heart className="h-10 w-10 text-rose" strokeWidth={1.5} fill="currentColor" fillOpacity={0.15} />
           </div>
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-ink">
+            CoupleApp
+          </h1>
+          <p className="text-lg font-semibold text-rose">
+            Bucin tapi realistis.
+          </p>
+        </div>
+
+        <p className="animate-fade-in mx-auto mb-8 max-w-xs text-sm leading-relaxed text-ink-muted">
+          Persiapkan masa depan bersama pasanganmu. Dari hubungan yang sehat,
+          tabungan yang terencana, sampai hari spesial yang tak terlupa.
+        </p>
+
+        {/* CTAs */}
+        <div className="animate-slide-up w-full max-w-xs space-y-3">
+          <Link
+            href="/auth/signup"
+            className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-rose px-6 py-4 text-base font-bold text-white shadow-elevated transition-all hover:shadow-glow active:scale-[0.98]"
+          >
+            Mulai Gratis
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+          <Link
+            href="/auth/login"
+            className="flex w-full items-center justify-center rounded-2xl border border-border bg-white px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-rose hover:text-rose"
+          >
+            Sudah punya akun? Masuk
+          </Link>
         </div>
       </div>
 
-      <div className="mt-16 rounded-2xl bg-primary-50 p-6 text-center">
-        <h2 className="mb-3 text-lg font-semibold text-gray-800">
-          5 Dimensi Kesiapan
+      {/* ===== 3 Pillars ===== */}
+      <div className="bg-white px-6 py-10">
+        <h2 className="mb-6 text-center text-xs font-bold uppercase tracking-widest text-ink-muted">
+          Satu Aplikasi, Tiga Kekuatan
         </h2>
-        <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-          {[
-            { icon: '💬', label: 'Komunikasi' },
-            { icon: '🎯', label: 'Nilai & Visi' },
-            { icon: '💰', label: 'Keuangan' },
-            { icon: '👨‍👩‍👧‍👦', label: 'Keluarga' },
-            { icon: '💍', label: 'Komitmen' },
-          ].map((d) => (
+        <div className="space-y-3">
+          {PILLARS.map(p => (
             <div
-              key={d.label}
-              className="rounded-xl bg-white px-3 py-2 shadow-sm"
+              key={p.title}
+              className="flex items-start gap-4 rounded-2xl border border-border bg-cream p-4"
             >
-              <span className="text-xl">{d.icon}</span>
-              <p className="mt-1 text-gray-600">{d.label}</p>
+              <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${p.color}`}>
+                <p.icon className="h-5 w-5" strokeWidth={2} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-ink">{p.title}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">{p.desc}</p>
+              </div>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ===== Assessment Teaser ===== */}
+      <div className="px-6 py-8">
+        <div className="rounded-2xl border border-rose/20 bg-rose-50 p-5 text-center">
+          <MessageCircle className="mx-auto mb-3 h-8 w-8 text-rose" strokeWidth={1.5} />
+          <h3 className="mb-1 text-base font-bold text-ink">Cek Kesiapan Hubunganmu</h3>
+          <p className="mb-4 text-xs leading-relaxed text-ink-muted">
+            15 pertanyaan, 5 dimensi kesiapan. Temukan kekuatan dan area
+            pertumbuhan hubungan kalian.
+          </p>
+          <Link
+            href="/auth/signup"
+            className="inline-flex items-center gap-1 text-sm font-bold text-rose hover:underline"
+          >
+            Daftar &amp; mulai assessment
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ===== Trust bar ===== */}
+      <div className="border-t border-border bg-white px-6 py-5">
+        <div className="flex items-center justify-center gap-5">
+          {TRUST_POINTS.map(tp => (
+            <div key={tp.text} className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <tp.icon className="h-3.5 w-3.5" strokeWidth={2} />
+              <span>{tp.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 text-center">
+        <p className="text-[11px] text-ink-muted/50">
+          CoupleApp &copy; 2026. Dibuat dengan cinta di Indonesia.
+        </p>
       </div>
     </div>
   )

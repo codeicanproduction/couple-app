@@ -23,14 +23,6 @@ export const DIMENSION_LABELS: Record<Dimension, string> = {
   komitmen: 'Komitmen',
 }
 
-export const DIMENSION_ICONS: Record<Dimension, string> = {
-  komunikasi: '💬',
-  nilai_visi: '🎯',
-  keuangan: '💰',
-  keluarga: '👨‍👩‍👧‍👦',
-  komitmen: '💍',
-}
-
 export const questions: Question[] = [
   // Komunikasi (3 questions)
   {
