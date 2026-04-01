@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Smartphone, Share, MoreHorizontal, Plus } from 'lucide-react'
+import { Smartphone, Share, MoreHorizontal, Plus, Bell, BellOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
+import { isPushSupported, getNotificationPermission, enablePushNotifications } from '@/lib/notifications'
 
 type Platform = 'ios' | 'android'
 
@@ -12,6 +13,21 @@ export default function OnboardingInstallPage() {
   const router = useRouter()
   const [platform, setPlatform] = useState<Platform>('ios')
   const [loading, setLoading] = useState(false)
+  const [pushSupported, setPushSupported] = useState(false)
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default')
+  const [enablingPush, setEnablingPush] = useState(false)
+
+  useEffect(() => {
+    isPushSupported().then(setPushSupported)
+    getNotificationPermission().then(setPushPermission)
+  }, [])
+
+  async function handleEnablePush() {
+    setEnablingPush(true)
+    const success = await enablePushNotifications()
+    setPushPermission(success ? 'granted' : 'denied')
+    setEnablingPush(false)
+  }
 
   async function handleFinish() {
     setLoading(true)
@@ -37,6 +53,43 @@ export default function OnboardingInstallPage() {
           Tambahkan ke layar utama untuk akses cepat seperti aplikasi biasa
         </p>
       </div>
+
+      {/* Push notification prompt — show first */}
+      {pushSupported && pushPermission !== 'granted' && (
+        <div className="mb-6 rounded-2xl border border-rose/20 bg-rose/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-rose/10">
+              <Bell className="h-5 w-5 text-rose" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-ink">Aktifkan Notifikasi</p>
+              <p className="text-xs text-ink-muted mt-0.5">
+                Supaya tahu kalau pasangan kangen, kirim surat, atau ada momen spesial
+              </p>
+              {pushPermission === 'denied' ? (
+                <p className="mt-2 text-xs text-amber-600 font-medium">
+                  Notifikasi diblokir — aktifkan manual di pengaturan browser
+                </p>
+              ) : (
+                <button
+                  onClick={handleEnablePush}
+                  disabled={enablingPush}
+                  className="mt-2.5 rounded-xl bg-rose px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-60"
+                >
+                  {enablingPush ? 'Mengaktifkan...' : '🔔 Aktifkan Notifikasi'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pushPermission === 'granted' && (
+        <div className="mb-6 flex items-center gap-2 rounded-xl bg-sage/10 border border-sage/20 px-4 py-3">
+          <Bell className="h-4 w-4 text-sage flex-shrink-0" />
+          <p className="text-sm font-semibold text-sage">Notifikasi aktif ✓</p>
+        </div>
+      )}
 
       {/* Platform toggle */}
       <div className="mb-6 flex rounded-xl border border-border bg-white p-1">
