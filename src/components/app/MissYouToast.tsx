@@ -15,8 +15,8 @@ interface MissYouToastProps {
 interface MissYouRow {
   id: string
   sender_id: string
-  responded: boolean | null
-  created_at: string | null
+  is_responded: boolean | null
+  created_at: string
 }
 
 function timeAgo(dateStr: string): string {
@@ -39,20 +39,20 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
     if (!coupleId || !partnerId) return
     const supabase = createClient()
 
-    // Get most recent unresponded miss you FROM partner to me
+    // Get most recent unresponded miss you FROM partner (identified by couple_id + sender_id)
     const { data } = await supabase
       .from('miss_you')
-      .select('id, sender_id, responded, created_at')
-      .eq('receiver_id', myId)
+      .select('id, sender_id, is_responded, created_at')
+      .eq('couple_id', coupleId)
       .eq('sender_id', partnerId)
-      .eq('responded', false)
+      .eq('is_responded', false)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
     if (data) {
       // Only show if within last 24 hours
-      const ageHours = (Date.now() - new Date(data.created_at!).getTime()) / 3600000
+      const ageHours = (Date.now() - new Date(data.created_at).getTime()) / 3600000
       if (ageHours < 24) {
         setLatestMissYou(data as MissYouRow)
       }
@@ -66,17 +66,16 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
     setResponding(true)
     const supabase = createClient()
 
-    // Mark as responded
+    // Mark original as responded
     await supabase
       .from('miss_you')
-      .update({ responded: true, responded_at: new Date().toISOString() })
+      .update({ is_responded: true, responded_at: new Date().toISOString() })
       .eq('id', latestMissYou.id)
 
     // Send reciprocal miss you
     await supabase.from('miss_you').insert({
       couple_id: coupleId,
       sender_id: myId,
-      receiver_id: partnerId,
     })
 
     // Push notif back
@@ -119,7 +118,7 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
               {partnerName ?? 'Pasangan'} kangen kamu
             </p>
             <p className="text-xs text-ink-muted mt-0.5">
-              {timeAgo(latestMissYou.created_at!)}
+              {timeAgo(latestMissYou.created_at)}
             </p>
 
             {responded ? (

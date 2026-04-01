@@ -106,7 +106,6 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
     const { error } = await supabase.from('miss_you').insert({
       couple_id: coupleId!,
       sender_id: myId,
-      receiver_id: partnerId!,
     })
 
     if (!error) {
