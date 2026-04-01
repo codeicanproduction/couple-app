@@ -103,7 +103,7 @@ export default function OnboardingInvitePage() {
       </div>
 
       <div className="mt-8">
-        <Button onClick={() => router.push('/onboarding/assessment')} variant="secondary" size="lg">
+        <Button onClick={() => router.push('/onboarding/install')} variant="secondary" size="lg">
           Lanjut Tanpa Menunggu
         </Button>
       </div>

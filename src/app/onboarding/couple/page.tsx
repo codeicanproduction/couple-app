@@ -46,7 +46,7 @@ function CouplePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       await joinCouple(inviteCode.trim(), user.id)
-      router.push('/onboarding/assessment')
+      router.push('/onboarding/install')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Gagal bergabung')
       setLoading(false)

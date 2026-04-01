@@ -7,7 +7,6 @@ const STEPS = [
   { path: '/onboarding/profile', label: 'Profil' },
   { path: '/onboarding/couple', label: 'Pasangan' },
   { path: '/onboarding/invite', label: 'Undang' },
-  { path: '/onboarding/assessment', label: 'Tes' },
   { path: '/onboarding/install', label: 'Pasang' },
 ]
 
