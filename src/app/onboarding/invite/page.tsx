@@ -32,15 +32,17 @@ export default function OnboardingInvitePage() {
     loadInviteCode()
   }, [router])
 
+  const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://couple-app-three.vercel.app'}/invite/${inviteCode}`
+
   function copyCode() {
-    navigator.clipboard.writeText(inviteCode)
+    navigator.clipboard.writeText(inviteLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   function shareWhatsApp() {
     const text = encodeURIComponent(
-      `Bergabunglah denganku di CoupleApp! 💕\nGunakan kode undangan: ${inviteCode}`
+      `Hei! Aku undang kamu bergabung di CoupleApp bersama aku 💕\n\nKlik link ini untuk langsung bergabung:\n${inviteLink}\n\nAtau masukkan kode: *${inviteCode}*`
     )
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }
@@ -70,6 +72,7 @@ export default function OnboardingInvitePage() {
         <p className="font-mono text-4xl font-bold tracking-[0.3em] text-rose">
           {inviteCode}
         </p>
+        <p className="mt-3 break-all text-xs text-ink-muted">{inviteLink}</p>
       </div>
 
       <div className="space-y-3">
@@ -80,12 +83,12 @@ export default function OnboardingInvitePage() {
           {copied ? (
             <>
               <Check className="h-4 w-4 text-sage-dark" />
-              Tersalin!
+              Link tersalin!
             </>
           ) : (
             <>
               <Copy className="h-4 w-4" />
-              Salin Kode
+              Salin Link Undangan
             </>
           )}
         </button>
@@ -95,7 +98,7 @@ export default function OnboardingInvitePage() {
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           <MessageCircle className="h-4 w-4" />
-          Bagikan via WhatsApp
+          Kirim via WhatsApp
         </button>
       </div>
 
