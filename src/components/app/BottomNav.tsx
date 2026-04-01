@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { memo, useTransition, useCallback } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { Home, Heart, Wallet, CalendarDays, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -15,53 +15,68 @@ const rightTabs = [
   { href: '/app/profile',  icon: User,         label: 'Profil' },
 ]
 
-export default function BottomNav() {
+function BottomNavInner() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
+  const navigate = useCallback((href: string) => {
+    if (pathname.startsWith(href)) return // already on this tab
+    startTransition(() => {
+      router.push(href)
+    })
+  }, [pathname, router, startTransition])
+
+  function renderTab(href: string, Icon: typeof Home, label: string) {
+    const active = pathname.startsWith(href)
+    return (
+      <button
+        key={href}
+        onClick={() => navigate(href)}
+        className="flex flex-1 flex-col items-center gap-0.5 py-2"
+      >
+        <div className={cn(
+          'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
+          active ? 'bg-rose-50' : ''
+        )}>
+          <Icon
+            className={cn('h-5 w-5 transition-colors', active ? 'text-rose' : 'text-ink-muted')}
+            strokeWidth={active ? 2.5 : 1.5}
+          />
+        </div>
+        <span className={cn(
+          'text-[10px] font-medium leading-none',
+          active ? 'text-rose' : 'text-ink-muted'
+        )}>
+          {label}
+        </span>
+      </button>
+    )
+  }
 
   return (
     <nav className="fixed bottom-0 left-1/2 w-full max-w-lg -translate-x-1/2 border-t border-border bg-surface">
+      {/* Loading indicator */}
+      {isPending && (
+        <div className="absolute left-0 right-0 top-0 h-0.5 overflow-hidden">
+          <div className="h-full w-1/3 animate-[shimmer_1s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-rose to-transparent" />
+        </div>
+      )}
+
       <div className="flex items-center justify-around px-2 pb-safe pt-1">
-        {/* Left tabs */}
-        {leftTabs.map(({ href, icon: Icon, label }) => {
-          const active = pathname.startsWith(href)
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-1 flex-col items-center gap-0.5 py-2"
-            >
-              <div className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
-                active ? 'bg-rose-50' : ''
-              )}>
-                <Icon
-                  className={cn('h-5 w-5 transition-colors', active ? 'text-rose' : 'text-ink-muted')}
-                  strokeWidth={active ? 2.5 : 1.5}
-                />
-              </div>
-              <span className={cn(
-                'text-[10px] font-medium leading-none',
-                active ? 'text-rose' : 'text-ink-muted'
-              )}>
-                {label}
-              </span>
-            </Link>
-          )
-        })}
+        {leftTabs.map(({ href, icon, label }) => renderTab(href, icon, label))}
 
         {/* Center floating button — Finance */}
         <div className="flex flex-1 flex-col items-center -mt-5">
-          <Link
-            href="/app/finance"
+          <button
+            onClick={() => navigate('/app/finance')}
             className={cn(
               'flex h-14 w-14 items-center justify-center rounded-full shadow-elevated transition-all active:scale-95',
-              pathname.startsWith('/app/finance')
-                ? 'bg-rose-dark'
-                : 'bg-rose'
+              pathname.startsWith('/app/finance') ? 'bg-rose-dark' : 'bg-rose'
             )}
           >
             <Wallet className="h-6 w-6 text-white" strokeWidth={2} />
-          </Link>
+          </button>
           <span className={cn(
             'mt-1 text-[10px] font-medium leading-none',
             pathname.startsWith('/app/finance') ? 'text-rose' : 'text-ink-muted'
@@ -70,34 +85,10 @@ export default function BottomNav() {
           </span>
         </div>
 
-        {/* Right tabs */}
-        {rightTabs.map(({ href, icon: Icon, label }) => {
-          const active = pathname.startsWith(href)
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-1 flex-col items-center gap-0.5 py-2"
-            >
-              <div className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
-                active ? 'bg-rose-50' : ''
-              )}>
-                <Icon
-                  className={cn('h-5 w-5 transition-colors', active ? 'text-rose' : 'text-ink-muted')}
-                  strokeWidth={active ? 2.5 : 1.5}
-                />
-              </div>
-              <span className={cn(
-                'text-[10px] font-medium leading-none',
-                active ? 'text-rose' : 'text-ink-muted'
-              )}>
-                {label}
-              </span>
-            </Link>
-          )
-        })}
+        {rightTabs.map(({ href, icon, label }) => renderTab(href, icon, label))}
       </div>
     </nav>
   )
 }
+
+export default memo(BottomNavInner)

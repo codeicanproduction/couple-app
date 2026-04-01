@@ -1,10 +1,17 @@
-const CACHE_NAME = 'coupleapp-v1'
-const PRECACHE_URLS = ['/', '/app/home']
+const CACHE_NAME = 'coupleapp-v2'
+const APP_SHELL_URLS = [
+  '/',
+  '/app/home',
+  '/app/finance',
+  '/app/partner',
+  '/app/calendar',
+  '/app/profile',
+]
 
 // ===== Install =====
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL_URLS))
   )
   self.skipWaiting()
 })
@@ -19,20 +26,82 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// ===== Fetch (network-first with cache fallback) =====
+// ===== Fetch — Tiered Caching Strategy =====
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return
+  const { request } = event
+  const url = new URL(request.url)
 
+  if (request.method !== 'GET') return
+  if (url.origin !== self.location.origin) return
+
+  // 1. Static assets → Cache-first (immutable hashed files)
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          }
+          return response
+        })
+      })
+    )
+    return
+  }
+
+  // 2. Icons & manifest → Cache-first with background update
+  if (url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const fetchPromise = fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          }
+          return response
+        })
+        return cached || fetchPromise
+      })
+    )
+    return
+  }
+
+  // 3. API routes → Network-first (data must be fresh)
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request).catch(() => caches.match(request)))
+    return
+  }
+
+  // 4. Navigation (HTML pages) → Stale-while-revalidate
+  if (request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const fetchPromise = fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          }
+          return response
+        }).catch(() => cached)
+        return cached || fetchPromise
+      })
+    )
+    return
+  }
+
+  // 5. Everything else → Network-first with cache fallback
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
         if (response.ok && response.type === 'basic') {
           const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
         }
         return response
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(request))
   )
 })
 
@@ -68,13 +137,11 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Focus existing window if found
       for (const client of windowClients) {
         if (client.url.includes(url) && 'focus' in client) {
           return client.focus()
         }
       }
-      // Otherwise open new window
       return clients.openWindow(url)
     })
   )

@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from 'next'
+import { DM_Sans } from 'next/font/google'
 import './globals.css'
 import PWARegister from '@/components/PWARegister'
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-dm-sans',
+})
 
 export const metadata: Metadata = {
   title: 'Couple App - Kesiapan Assessment',
@@ -29,7 +37,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="min-h-screen bg-cream antialiased">
+      <body className={`${dmSans.className} min-h-screen bg-cream antialiased`}>
         <main className="mx-auto max-w-lg">
           {children}
         </main>
