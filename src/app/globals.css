@@ -70,4 +70,8 @@ input[type='range']::-moz-range-thumb {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 8px);
   }
+  /* Nav bar needs extra padding — sits above bezel like Instagram */
+  .pb-safe-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom, 12px) + 6px);
+  }
 }

@@ -63,7 +63,7 @@ function BottomNavInner() {
         </div>
       )}
 
-      <div className="flex items-center justify-around px-2 pb-safe pt-1">
+      <div className="flex items-center justify-around px-2 pb-safe-nav pt-1">
         {leftTabs.map(({ href, icon, label }) => renderTab(href, icon, label))}
 
         {/* Center floating button — Finance */}

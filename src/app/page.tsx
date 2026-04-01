@@ -101,25 +101,6 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ===== Assessment Teaser ===== */}
-      <div className="px-6 py-8">
-        <div className="rounded-2xl border border-rose/20 bg-rose-50 p-5 text-center">
-          <MessageCircle className="mx-auto mb-3 h-8 w-8 text-rose" strokeWidth={1.5} />
-          <h3 className="mb-1 text-base font-bold text-ink">Cek Kesiapan Hubunganmu</h3>
-          <p className="mb-4 text-xs leading-relaxed text-ink-muted">
-            15 pertanyaan, 5 dimensi kesiapan. Temukan kekuatan dan area
-            pertumbuhan hubungan kalian.
-          </p>
-          <Link
-            href="/auth/signup"
-            className="inline-flex items-center gap-1 text-sm font-bold text-rose hover:underline"
-          >
-            Daftar &amp; mulai assessment
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </div>
-
       {/* ===== Trust bar ===== */}
       <div className="border-t border-border bg-white px-6 py-5">
         <div className="flex items-center justify-center gap-5">

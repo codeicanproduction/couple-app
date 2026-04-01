@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { ClipboardList, Wallet, CalendarDays, ArrowRight, X } from 'lucide-react'
+import { Wallet, CalendarDays, ArrowRight, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface GuideAction {
-  icon: typeof ClipboardList
+  icon: typeof Wallet
   title: string
   desc: string
   href: string
@@ -15,31 +15,21 @@ interface GuideAction {
 
 interface WelcomeGuideProps {
   userName: string | null
-  hasAssessment: boolean
   hasSavingsGoal: boolean
   hasEvents: boolean
 }
 
 export default function WelcomeGuide({
   userName,
-  hasAssessment,
   hasSavingsGoal,
   hasEvents,
 }: WelcomeGuideProps) {
   const [dismissed, setDismissed] = useState(false)
 
-  const allDone = hasAssessment && hasSavingsGoal && hasEvents
+  const allDone = hasSavingsGoal && hasEvents
   if (allDone || dismissed) return null
 
   const actions: GuideAction[] = [
-    {
-      icon: ClipboardList,
-      title: 'Cek kesiapan hubungan',
-      desc: 'Assessment 15 pertanyaan',
-      href: '/app/assessment',
-      color: 'bg-rose/10 text-rose',
-      done: hasAssessment,
-    },
     {
       icon: Wallet,
       title: 'Buat target tabungan',
@@ -79,7 +69,6 @@ export default function WelcomeGuide({
         </button>
       </div>
 
-      {/* Progress bar */}
       <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-border">
         <div
           className="h-full rounded-full bg-rose transition-all duration-500"

@@ -37,8 +37,6 @@ export default async function HomePage() {
   let partnerMemberId: string | null = null
   let coupleEvents: Array<{ id: string; title: string; event_date: string; event_type: string; is_recurring: boolean }> = []
   let topSavingsGoal = null
-  let hasAssessment = false
-
   if (myMembership?.couple_id) {
     // Get partner
     const { data: allMembers } = await supabase
@@ -75,14 +73,6 @@ export default async function HomePage() {
 
     topSavingsGoal = goals?.[0] ?? null
 
-    // Check if user has done assessment
-    const { count } = await supabase
-      .from('assessment_results')
-      .select('id', { count: 'exact', head: true })
-      .eq('profile_id', user.id)
-      .eq('couple_id', myMembership.couple_id)
-
-    hasAssessment = (count ?? 0) > 0
   }
 
   const daysTogether = profile?.relationship_start_date
@@ -93,7 +83,7 @@ export default async function HomePage() {
 
   const hasSavingsGoal = topSavingsGoal !== null
   const hasEvents = coupleEvents.length > 0
-  const isNewUser = !hasAssessment && !hasSavingsGoal && !hasEvents
+  const isNewUser = !hasSavingsGoal && !hasEvents
 
   // Find next upcoming date plan
   const nextDatePlan = coupleEvents
@@ -121,7 +111,6 @@ export default async function HomePage() {
         {isNewUser && (
           <WelcomeGuide
             userName={profile?.name ?? null}
-            hasAssessment={hasAssessment}
             hasSavingsGoal={hasSavingsGoal}
             hasEvents={hasEvents}
           />

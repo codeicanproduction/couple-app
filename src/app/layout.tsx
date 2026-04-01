@@ -11,9 +11,9 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Couple App - Kesiapan Assessment',
-  description: 'Cek kesiapan hubungan kamu dan pasangan. Assessment komprehensif untuk pasangan Indonesia.',
-  keywords: ['couple', 'relationship', 'assessment', 'indonesia', 'kesiapan'],
+  title: 'CoupleApp',
+  description: 'Aplikasi untuk pasangan Indonesia. Tabungan bersama, kalender, surat rahasia, dan obrolan seru.',
+  keywords: ['couple', 'relationship', 'indonesia', 'pasangan', 'tabungan'],
 }
 
 export const viewport: Viewport = {

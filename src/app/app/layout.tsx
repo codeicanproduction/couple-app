@@ -8,7 +8,7 @@ export default function AppLayout({
 }) {
   return (
     <div className="relative min-h-screen">
-      <div className="pb-20">
+      <div className="pb-24">
         {children}
       </div>
       <BottomNav />

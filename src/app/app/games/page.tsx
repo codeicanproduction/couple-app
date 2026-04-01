@@ -1,28 +1,18 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ClipboardList, Shuffle, MessageSquare, Sparkles, Lock, MessageCircleHeart } from 'lucide-react'
+import { Shuffle, MessageSquare, Sparkles, Lock, MessageCircleHeart } from 'lucide-react'
 
 const GAMES = [
   {
     id: 'deep-talk',
-    title: 'Deep Talk',
-    desc: '5 pack percakapan mendalam',
+    title: 'Obrolan Bareng',
+    desc: 'Pertanyaan untuk saling kenal lebih dalam',
     icon: MessageCircleHeart,
     color: 'bg-rose/10 text-rose',
     available: true,
     href: '/app/games/deep-talk',
-    badge: '5 Pack',
-  },
-  {
-    id: 'assessment',
-    title: 'Assessment Kesiapan',
-    desc: '15 pertanyaan tentang hubunganmu',
-    icon: ClipboardList,
-    color: 'bg-purple-100 text-purple-600',
-    available: true,
-    href: '/app/assessment',
-    badge: null,
+    badge: '5 Topik',
   },
   {
     id: 'truth-or-dare',

@@ -26,10 +26,6 @@ interface MbtiResult {
   taken_at: string | null
 }
 
-interface AssessmentScores {
-  [key: string]: number
-}
-
 interface WishlistItem {
   id: string; name: string; price: number | null; is_purchased: boolean
   owner_type: string | null; owner_id: string | null; link: string | null; image_url: string | null
@@ -62,7 +58,6 @@ export default function PartnerPage() {
   const [partner, setPartner] = useState<PartnerProfile | null>(null)
   const [myProfile, setMyProfile] = useState<PartnerProfile | null>(null)
   const [partnerMbti, setPartnerMbti] = useState<MbtiResult | null>(null)
-  const [partnerAssessment, setPartnerAssessment] = useState<AssessmentScores | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -95,10 +90,6 @@ export default function PartnerPage() {
         .eq('profile_id', pid).order('taken_at', { ascending: false }).limit(1).maybeSingle()
       if (pMbti) setPartnerMbti(pMbti as unknown as MbtiResult)
 
-      // Partner assessment
-      const { data: pAssessment } = await supabase.from('assessment_results').select('scores')
-        .eq('profile_id', pid).order('taken_at', { ascending: false }).limit(1).maybeSingle()
-      if (pAssessment) setPartnerAssessment(pAssessment.scores as AssessmentScores)
     }
 
     // Wishlist
@@ -183,38 +174,6 @@ export default function PartnerPage() {
             </div>
           )}
         </div>
-
-        {/* ===== PARTNER ASSESSMENT ===== */}
-        {partner && (
-          <div>
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
-              Assessment Kesiapan {partner.name ?? 'Pasangan'}
-            </h2>
-            {partnerAssessment ? (
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-card space-y-3">
-                {Object.entries(partnerAssessment).map(([label, score]) => {
-                  const pct = Math.round((Number(score) / 5) * 100)
-                  return (
-                    <div key={label}>
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="text-xs font-medium text-ink">{label}</span>
-                        <span className="text-xs font-bold text-ink-muted">{Number(score).toFixed(1)}/5</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-cream">
-                        <div className="h-full rounded-full bg-sage transition-all" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-border bg-cream/30 p-5 text-center">
-                <Sparkles className="mx-auto mb-2 h-8 w-8 text-ink-muted/30" strokeWidth={1.5} />
-                <p className="text-sm text-ink-muted">{partner.name ?? 'Pasangan'} belum assessment</p>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* ===== WISHLIST ===== */}
         {coupleId && userId && (

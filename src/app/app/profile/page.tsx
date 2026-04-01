@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Heart, CalendarDays, ClipboardList, ChevronRight, Brain } from 'lucide-react'
+import { LogOut, Heart, CalendarDays, ChevronRight, Brain } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { daysSince, formatDateID, getRelationshipLevel } from '@/lib/dates'
 import { Button } from '@/components/ui/Button'
@@ -18,18 +18,13 @@ interface ProfileData {
   avatar_url: string | null
 }
 
-interface AssessmentScore {
-  dimension: string
-  score: number
-}
-
 export default function ProfilePage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [profile, setProfile] = useState<ProfileData | null>(null)
-  const [assessmentScores, setAssessmentScores] = useState<AssessmentScore[]>([])
   const [inviteCode, setInviteCode] = useState<string | null>(null)
   const [myMbti, setMyMbti] = useState<{ mbti_type: string; scores: MbtiScores } | null>(null)
+  // assessment removed — replaced by Deep Talk feature
   const [loading, setLoading] = useState(true)
   const [signingOut, setSigningOut] = useState(false)
 
@@ -61,15 +56,6 @@ export default function ProfilePage() {
         setInviteCode(couple?.invite_code ?? null)
       }
 
-      const { data: assessment } = await supabase
-        .from('assessment_results').select('scores')
-        .eq('couple_id', membership.couple_id).eq('profile_id', user.id)
-        .order('taken_at', { ascending: false }).limit(1).maybeSingle()
-
-      if (assessment?.scores && typeof assessment.scores === 'object') {
-        const scores = assessment.scores as Record<string, number>
-        setAssessmentScores(Object.entries(scores).map(([dimension, score]) => ({ dimension, score })))
-      }
     }
 
     // Get own MBTI
@@ -149,29 +135,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Assessment results */}
-        {assessmentScores.length > 0 && (
-          <div className="rounded-2xl border border-border bg-white shadow-card overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-              <ClipboardList className="h-4 w-4 text-rose" strokeWidth={2} />
-              <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Hasil Assessment Terakhir</span>
-            </div>
-            <div className="p-4 space-y-3">
-              {assessmentScores.map(({ dimension, score }) => (
-                <div key={dimension}>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm text-ink">{dimension}</span>
-                    <span className="text-sm font-bold text-ink">{score}/5</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-border">
-                    <div className="h-full rounded-full bg-rose transition-all" style={{ width: `${(score / 5) * 100}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* MBTI Result */}
         <div>
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">Kepribadian MBTI</h2>
@@ -202,14 +165,6 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <Brain className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium text-ink">{myMbti ? 'Tes Ulang MBTI' : 'Tes MBTI'}</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-ink-muted" />
-          </button>
-          <button onClick={() => router.push('/app/assessment')}
-            className="flex w-full items-center justify-between border-b border-border px-4 py-3.5 text-left hover:bg-cream">
-            <div className="flex items-center gap-3">
-              <ClipboardList className="h-4 w-4 text-ink-muted" />
-              <span className="text-sm font-medium text-ink">{assessmentScores.length > 0 ? 'Ulangi Assessment' : 'Mulai Assessment'}</span>
             </div>
             <ChevronRight className="h-4 w-4 text-ink-muted" />
           </button>

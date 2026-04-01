@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ChevronRight, Play, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Play, CheckCircle2, MessageCircleHeart } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { getPacksWithProgress } from '@/lib/deep-talk'
 import type { DeepTalkPack, DeepTalkProgress } from '@/lib/deep-talk'
@@ -68,8 +68,8 @@ export default function DeepTalkHubPage() {
         <button onClick={() => router.back()} className="mb-3 flex items-center gap-1 text-sm text-ink-muted">
           <ArrowLeft className="h-4 w-4" /> Games
         </button>
-        <h1 className="text-xl font-bold text-ink">Deep Talk</h1>
-        <p className="text-sm text-ink-muted">Percakapan mendalam untuk kalian berdua</p>
+        <h1 className="text-xl font-bold text-ink">Obrolan Bareng</h1>
+        <p className="text-sm text-ink-muted">Pertanyaan untuk saling kenal lebih dalam</p>
       </div>
 
       <div className="space-y-3 px-6 pt-5">
@@ -87,12 +87,8 @@ export default function DeepTalkHubPage() {
               onClick={() => router.push(`/app/games/deep-talk/${pack.slug}`)}
               className="flex w-full items-center gap-4 rounded-2xl border border-border bg-white p-4 text-left shadow-card transition-all hover:border-rose/30 active:scale-[0.99]"
             >
-              <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-2xl`}>
-                {pack.sort_order === 1 && '💬'}
-                {pack.sort_order === 2 && '🚀'}
-                {pack.sort_order === 3 && '❤️'}
-                {pack.sort_order === 4 && '🛡️'}
-                {pack.sort_order === 5 && '✨'}
+              <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient}`}>
+                <MessageCircleHeart className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -115,7 +111,7 @@ export default function DeepTalkHubPage() {
 
         {!coupleId && (
           <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-            <p className="text-sm text-ink-muted">Hubungkan akun dengan pasanganmu dulu untuk memulai Deep Talk</p>
+            <p className="text-sm text-ink-muted">Hubungkan akun dengan pasanganmu dulu untuk mulai</p>
           </div>
         )}
       </div>
@@ -124,8 +120,8 @@ export default function DeepTalkHubPage() {
         <div className="flex items-start gap-3">
           <Play className="mt-0.5 h-4 w-4 flex-shrink-0 text-rose" />
           <div>
-            <p className="text-xs font-semibold text-ink">Cara bermain</p>
-            <p className="mt-1 text-xs text-ink-muted">Buka aplikasi bersama pasangan, baca pertanyaan bergantian, dan jawab dengan jujur. Tidak ada jawaban benar atau salah!</p>
+            <p className="text-xs font-semibold text-ink">Cara main</p>
+            <p className="mt-1 text-xs text-ink-muted">Buka bareng pasangan, baca pertanyaannya bergantian, terus jawab apa adanya. Bebas, santai, yang penting jujur.</p>
           </div>
         </div>
       </div>
