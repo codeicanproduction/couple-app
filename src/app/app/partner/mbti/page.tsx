@@ -75,16 +75,16 @@ export default function MbtiTestPage() {
           </div>
           <h1 className="text-2xl font-bold text-ink">Tes MBTI</h1>
           <p className="mt-2 text-sm text-ink-muted">
-            Kenali kepribadianmu dengan 20 pertanyaan singkat.
+            Kenali kepribadianmu dengan 40 pertanyaan berbasis situasi nyata.
             Hasilnya bisa dilihat pasanganmu di halaman Pasangan.
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-3 w-full">
             {[
-              { label: '20 Pertanyaan', sub: 'Pilih A atau B' },
+              { label: '40 Pertanyaan', sub: 'Skenario nyata' },
               { label: '4 Dimensi', sub: 'E/I, S/N, T/F, J/P' },
               { label: '16 Tipe', sub: 'Kepribadian unikmu' },
-              { label: '~3 Menit', sub: 'Cepat dan seru' },
+              { label: '~5 Menit', sub: 'Lebih akurat' },
             ].map(item => (
               <div key={item.label} className="rounded-xl bg-purple-50 p-3 text-center">
                 <p className="text-sm font-bold text-purple-700">{item.label}</p>
@@ -150,14 +150,7 @@ export default function MbtiTestPage() {
           style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Dichotomy label */}
-      <div className="mb-4 text-center">
-        <span className="rounded-full bg-purple-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-purple-600">
-          {{ EI: 'Extrovert vs Introvert', SN: 'Sensing vs Intuition', TF: 'Thinking vs Feeling', JP: 'Judging vs Perceiving' }[question.dichotomy]}
-        </span>
-      </div>
-
-      {/* Question */}
+      {/* Question prompt */}
       <p className="mb-8 text-center text-sm font-semibold text-ink-muted">Mana yang lebih menggambarkan dirimu?</p>
 
       {/* Options */}
