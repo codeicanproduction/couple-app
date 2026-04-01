@@ -8,6 +8,9 @@ import UpcomingDates from '@/components/app/UpcomingDates'
 import WelcomeGuide from '@/components/app/WelcomeGuide'
 import DatePlanCard from '@/components/app/DatePlanCard'
 import DeepTalkBanner from '@/components/app/DeepTalkBanner'
+import MissYouButton from '@/components/app/MissYouButton'
+import MissYouToast from '@/components/app/MissYouToast'
+import LettersBanner from '@/components/app/LettersBanner'
 import { daysUntil, getNextOccurrence } from '@/lib/dates'
 
 export default async function HomePage() {
@@ -31,6 +34,7 @@ export default async function HomePage() {
     .single()
 
   let partnerProfile = null
+  let partnerMemberId: string | null = null
   let coupleEvents: Array<{ id: string; title: string; event_date: string; event_type: string; is_recurring: boolean }> = []
   let topSavingsGoal = null
   let hasAssessment = false
@@ -44,6 +48,7 @@ export default async function HomePage() {
       .neq('profile_id', user.id)
 
     if (allMembers && allMembers.length > 0) {
+      partnerMemberId = allMembers[0].profile_id
       const { data: partner } = await supabase
         .from('profiles')
         .select('name, avatar_url')
@@ -121,6 +126,25 @@ export default async function HomePage() {
             hasEvents={hasEvents}
           />
         )}
+
+        {/* Miss You received toast */}
+        <MissYouToast
+          myId={user.id}
+          myName={profile?.name ?? 'Kamu'}
+          partnerId={partnerMemberId}
+          partnerName={partnerProfile?.name ?? null}
+          coupleId={myMembership?.couple_id ?? null}
+        />
+
+        {/* Tombol Kangen */}
+        <MissYouButton
+          myId={user.id}
+          myName={profile?.name ?? 'Seseorang'}
+          partnerId={partnerMemberId}
+          coupleId={myMembership?.couple_id ?? null}
+        />
+
+        <LettersBanner myId={user.id} coupleId={myMembership?.couple_id ?? null} />
 
         <DeepTalkBanner />
 

@@ -646,6 +646,112 @@ export type Database = {
           },
         ]
       }
+      letters: {
+        Row: {
+          content: string
+          couple_id: string
+          created_at: string | null
+          id: string
+          is_opened: boolean | null
+          occasion: string | null
+          occasion_label: string | null
+          opened_at: string | null
+          receiver_id: string
+          sender_id: string
+          unlock_date: string
+        }
+        Insert: {
+          content: string
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          is_opened?: boolean | null
+          occasion?: string | null
+          occasion_label?: string | null
+          opened_at?: string | null
+          receiver_id: string
+          sender_id: string
+          unlock_date: string
+        }
+        Update: {
+          content?: string
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          is_opened?: boolean | null
+          occasion?: string | null
+          occasion_label?: string | null
+          opened_at?: string | null
+          receiver_id?: string
+          sender_id?: string
+          unlock_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "letters_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "letters_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "letters_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      miss_you: {
+        Row: {
+          couple_id: string
+          created_at: string
+          id: string
+          is_responded: boolean | null
+          responded_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          id?: string
+          is_responded?: boolean | null
+          responded_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          id?: string
+          is_responded?: boolean | null
+          responded_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "miss_you_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "miss_you_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlist_items: {
         Row: {
           couple_id: string

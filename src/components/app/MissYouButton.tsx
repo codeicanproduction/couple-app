@@ -1,0 +1,199 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { Heart } from 'lucide-react'
+import { createClient } from '@/lib/supabase'
+
+interface MissYouButtonProps {
+  myId: string
+  myName: string
+  partnerId: string | null
+  coupleId: string | null
+}
+
+const COOLDOWN_HOURS = 4
+const MAX_PER_DAY = 3
+
+function formatCountdown(ms: number): string {
+  const totalMins = Math.ceil(ms / 60000)
+  const h = Math.floor(totalMins / 60)
+  const m = totalMins % 60
+  if (h > 0) return `${h}j ${m}m`
+  return `${m}m`
+}
+
+function isToday(dateStr: string): boolean {
+  const d = new Date(dateStr)
+  const now = new Date()
+  return d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+}
+
+export default function MissYouButton({ myId, myName, partnerId, coupleId }: MissYouButtonProps) {
+  const [sending, setSending] = useState(false)
+  const [justSent, setJustSent] = useState(false)
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null) // timestamp ms
+  const [usedToday, setUsedToday] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [tick, setTick] = useState(0)
+
+  // countdown timer
+  useEffect(() => {
+    if (!cooldownUntil) return
+    const interval = setInterval(() => setTick(t => t + 1), 30000)
+    return () => clearInterval(interval)
+  }, [cooldownUntil])
+
+  const loadStatus = useCallback(async () => {
+    if (!coupleId) { setLoading(false); return }
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('miss_you')
+      .select('created_at')
+      .eq('sender_id', myId)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    const rows = data ?? []
+    const todayCount = rows.filter(r => isToday(r.created_at!)).length
+    setUsedToday(todayCount)
+
+    const latest = rows[0]
+    if (latest) {
+      const latestMs = new Date(latest.created_at!).getTime()
+      const cooldownEnd = latestMs + COOLDOWN_HOURS * 3600 * 1000
+      if (cooldownEnd > Date.now()) {
+        setCooldownUntil(cooldownEnd)
+      } else {
+        setCooldownUntil(null)
+      }
+    }
+    setLoading(false)
+  }, [myId, coupleId])
+
+  useEffect(() => { loadStatus() }, [loadStatus])
+
+  const isCoolingDown = cooldownUntil !== null && cooldownUntil > Date.now()
+  const isMaxedOut = usedToday >= MAX_PER_DAY
+  const isDisabled = !partnerId || !coupleId || isCoolingDown || isMaxedOut || sending || loading
+
+  async function handleTap() {
+    if (isDisabled) return
+    setSending(true)
+    const supabase = createClient()
+
+    // Server-side cooldown check: query last tap
+    const { data: recent } = await supabase
+      .from('miss_you')
+      .select('created_at')
+      .eq('sender_id', myId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (recent?.created_at) {
+      const latestMs = new Date(recent.created_at).getTime()
+      const cooldownEnd = latestMs + COOLDOWN_HOURS * 3600 * 1000
+      if (cooldownEnd > Date.now()) {
+        setCooldownUntil(cooldownEnd)
+        setSending(false)
+        return
+      }
+    }
+
+    // Insert
+    const { error } = await supabase.from('miss_you').insert({
+      couple_id: coupleId!,
+      sender_id: myId,
+      receiver_id: partnerId!,
+    })
+
+    if (!error) {
+      setJustSent(true)
+      setCooldownUntil(Date.now() + COOLDOWN_HOURS * 3600 * 1000)
+      setUsedToday(u => u + 1)
+      setTimeout(() => setJustSent(false), 3000)
+
+      // Send push notification
+      try {
+        await fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: partnerId,
+            title: '💓 CoupleApp',
+            body: `${myName} lagi kangen kamu`,
+            url: '/app/home',
+          }),
+        })
+      } catch { /* push optional */ }
+    }
+    setSending(false)
+  }
+
+  if (!coupleId) return null
+
+  const remaining = MAX_PER_DAY - usedToday
+  const cooldownMs = cooldownUntil ? cooldownUntil - Date.now() : 0
+
+  return (
+    <div className="mx-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Tombol Kangen</span>
+        {!isCoolingDown && !isMaxedOut && (
+          <span className="text-xs text-ink-muted">{remaining} lagi hari ini</span>
+        )}
+      </div>
+
+      <button
+        onClick={handleTap}
+        disabled={isDisabled}
+        className={`group relative w-full overflow-hidden rounded-2xl py-4 transition-all duration-200 active:scale-[0.97] ${
+          isDisabled
+            ? 'bg-cream border border-border cursor-not-allowed'
+            : 'bg-gradient-to-r from-rose to-[#c45a7a] shadow-elevated'
+        }`}
+      >
+        {/* Ripple animation when just sent */}
+        {justSent && (
+          <>
+            <span className="absolute inset-0 animate-ping rounded-2xl bg-rose/30" />
+            <span className="absolute inset-0 animate-pulse rounded-2xl bg-rose/10" />
+          </>
+        )}
+
+        <div className="relative flex items-center justify-center gap-3">
+          <Heart
+            className={`h-5 w-5 transition-all duration-300 ${
+              isDisabled
+                ? 'text-ink-muted'
+                : justSent
+                ? 'text-white scale-125 fill-white'
+                : 'text-white group-hover:scale-110'
+            }`}
+            fill={justSent ? 'currentColor' : 'none'}
+            strokeWidth={2}
+          />
+          <span className={`text-sm font-bold ${isDisabled ? 'text-ink-muted' : 'text-white'}`}>
+            {justSent
+              ? 'Terkirim! 💕'
+              : isCoolingDown
+              ? `Bisa kirim lagi dalam ${formatCountdown(cooldownMs)}`
+              : isMaxedOut
+              ? 'Batas hari ini tercapai'
+              : sending
+              ? 'Mengirim...'
+              : 'Kangen'}
+          </span>
+        </div>
+      </button>
+
+      {justSent && (
+        <p className="mt-1.5 text-center text-xs text-ink-muted animate-fade-in">
+          Notifikasi terkirim ke pasangan 💌
+        </p>
+      )}
+    </div>
+  )
+}
