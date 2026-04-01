@@ -1,6 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database'
+
+// Service role client — bypasses RLS. Use for admin/system operations only.
+export function createServiceRoleClient() {
+  return createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
 
 // For use in Server Components, Route Handlers, and Server Actions
 export async function createServerSupabaseClient() {

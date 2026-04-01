@@ -1,83 +1,81 @@
 import { NextRequest, NextResponse } from 'next/server'
 import webpush from 'web-push'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase-server'
 
 export async function POST(req: NextRequest) {
-  // Set VAPID details inside handler so env vars are available at runtime (not build time)
-  const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-  const vapidPrivate = process.env.VAPID_PRIVATE_KEY
+  try {
+    // Auth check — must be logged in
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  if (!vapidPublic || !vapidPrivate) {
-    console.error('[push/send] Missing VAPID env vars')
-    return NextResponse.json({ error: 'Push not configured' }, { status: 500 })
-  }
+    // VAPID setup
+    const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    const vapidPrivate = process.env.VAPID_PRIVATE_KEY
+    if (!vapidPublic || !vapidPrivate) {
+      return NextResponse.json({ error: 'Push not configured' }, { status: 500 })
+    }
+    webpush.setVapidDetails('mailto:admin@coupleapp.id', vapidPublic, vapidPrivate)
 
-  webpush.setVapidDetails('mailto:admin@coupleapp.id', vapidPublic, vapidPrivate)
+    const { recipientId, title, body, url } = await req.json()
+    if (!recipientId || !title || !body) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    }
 
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    console.warn('[push/send] Unauthorized request')
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+    // Use service role client to bypass RLS — needed to read any user's subscriptions
+    const admin = createServiceRoleClient()
 
-  const { recipientId, title, body, url } = await req.json()
-  if (!recipientId || !title || !body) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
-  }
-
-  // Fetch all push subscriptions for the recipient
-  const { data: subs, error: subsError } = await supabase
-    .from('push_subscriptions')
-    .select('endpoint, p256dh, auth_key')
-    .eq('profile_id', recipientId)
-
-  if (subsError) {
-    console.error('[push/send] DB error fetching subs:', subsError.message)
-    return NextResponse.json({ error: 'DB error' }, { status: 500 })
-  }
-
-  if (!subs || subs.length === 0) {
-    console.log(`[push/send] No subscriptions for recipient ${recipientId}`)
-    return NextResponse.json({ sent: 0, message: 'No subscriptions found' })
-  }
-
-  console.log(`[push/send] Sending to ${subs.length} subscription(s) for ${recipientId}`)
-
-  const payload = JSON.stringify({ title, body, url: url ?? '/app/home' })
-  let sent = 0
-  const staleEndpoints: string[] = []
-
-  await Promise.all(
-    subs.map(async (sub) => {
-      try {
-        const result = await webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } },
-          payload
-        )
-        console.log(`[push/send] Delivered to ${sub.endpoint.substring(0, 50)}... status: ${result.statusCode}`)
-        sent++
-      } catch (err: unknown) {
-        const status = (err as { statusCode?: number })?.statusCode
-        const body = (err as { body?: string })?.body
-        console.error(`[push/send] Failed to ${sub.endpoint.substring(0, 50)}...: ${status} ${body}`)
-        if (status === 404 || status === 410) {
-          staleEndpoints.push(sub.endpoint)
-        }
-      }
-    })
-  )
-
-  // Clean up stale subscriptions
-  if (staleEndpoints.length > 0) {
-    console.log(`[push/send] Removing ${staleEndpoints.length} stale subscriptions`)
-    await supabase
+    const { data: subs, error: subsError } = await admin
       .from('push_subscriptions')
-      .delete()
+      .select('endpoint, p256dh, auth_key')
       .eq('profile_id', recipientId)
-      .in('endpoint', staleEndpoints)
-  }
 
-  console.log(`[push/send] Done. sent=${sent}, stale=${staleEndpoints.length}`)
-  return NextResponse.json({ sent, stale: staleEndpoints.length })
+    if (subsError) {
+      console.error('[push/send] DB error:', subsError.message)
+      return NextResponse.json({ error: 'DB error', detail: subsError.message }, { status: 500 })
+    }
+
+    if (!subs || subs.length === 0) {
+      return NextResponse.json({ sent: 0, message: 'No subscriptions found' })
+    }
+
+    const payload = JSON.stringify({ title, body, url: url ?? '/app/home' })
+    let sent = 0
+    const staleEndpoints: string[] = []
+
+    await Promise.allSettled(
+      subs.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } },
+            payload
+          )
+          sent++
+        } catch (err: unknown) {
+          const status = (err as { statusCode?: number })?.statusCode
+          if (status === 404 || status === 410) {
+            staleEndpoints.push(sub.endpoint)
+          }
+        }
+      })
+    )
+
+    // Clean stale
+    if (staleEndpoints.length > 0) {
+      await admin
+        .from('push_subscriptions')
+        .delete()
+        .in('endpoint', staleEndpoints)
+    }
+
+    return NextResponse.json({ sent, stale: staleEndpoints.length })
+  } catch (err: unknown) {
+    console.error('[push/send] Unhandled error:', err)
+    return NextResponse.json(
+      { error: 'Internal error', detail: String(err) },
+      { status: 500 }
+    )
+  }
 }
