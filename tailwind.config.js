@@ -4,6 +4,15 @@ module.exports = {
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/data/**/*.{js,ts}',
+  ],
+  safelist: [
+    // Samakan game dynamic gradient backgrounds
+    'from-rose-900', 'to-pink-900',
+    'from-sky-900', 'to-blue-900',
+    'from-emerald-900', 'to-green-900',
+    'from-amber-900', 'to-orange-900',
+    'bg-gradient-to-br',
   ],
   theme: {
     extend: {
