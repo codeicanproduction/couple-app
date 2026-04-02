@@ -70,6 +70,7 @@ export default async function HomePage() {
           coupleId={myMembership?.couple_id ?? null}
           userId={user.id}
           userName={profile?.name ?? null}
+          partnerId={partnerId}
           partnerName={partnerName}
         />
 

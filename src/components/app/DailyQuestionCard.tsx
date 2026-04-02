@@ -10,6 +10,7 @@ interface DailyQuestionCardProps {
   coupleId: string | null
   userId: string | null
   userName: string | null
+  partnerId: string | null
   partnerName: string | null
 }
 
@@ -19,7 +20,7 @@ interface DailyResponse {
 }
 
 export default function DailyQuestionCard({
-  question, questionIndex, coupleId, userId, userName, partnerName,
+  question, questionIndex, coupleId, userId, userName, partnerId, partnerName,
 }: DailyQuestionCardProps) {
   const [myAnswer, setMyAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -107,6 +108,22 @@ export default function DailyQuestionCard({
     await loadResponses()
     setSubmitting(false)
     setMyAnswer('')
+
+    // Notify partner
+    if (partnerId) {
+      try {
+        await fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: partnerId,
+            title: 'CoupleApp',
+            body: `${userName ?? 'Pasanganmu'} sudah jawab pertanyaan hari ini! Giliranmu`,
+            url: '/app/home',
+          }),
+        })
+      } catch { /* optional */ }
+    }
   }
 
   if (!loaded) return null

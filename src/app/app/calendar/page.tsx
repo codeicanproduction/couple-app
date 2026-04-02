@@ -72,6 +72,8 @@ function dayName(dateStr: string): string {
 export default function CalendarPage() {
   const [coupleId, setCoupleId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [userName, setUserName] = useState<string | null>(null)
+  const [partnerId, setPartnerId] = useState<string | null>(null)
   const [events, setEvents] = useState<CoupleEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('semua')
@@ -108,6 +110,12 @@ export default function CalendarPage() {
 
     if (!membership?.couple_id) { setLoading(false); return }
     setCoupleId(membership.couple_id)
+
+    // Load my name + partner id
+    const { data: myProfile } = await supabase.from('profiles').select('name').eq('id', user.id).single()
+    setUserName(myProfile?.name ?? null)
+    const { data: members } = await supabase.from('couple_members').select('profile_id').eq('couple_id', membership.couple_id).neq('profile_id', user.id)
+    if (members?.[0]) setPartnerId(members[0].profile_id)
 
     const { data } = await supabase
       .from('couple_events').select('*').eq('couple_id', membership.couple_id).order('event_date')
@@ -198,6 +206,23 @@ export default function CalendarPage() {
       budget: newBudget ? parseInt(newBudget.replace(/\D/g, ''), 10) : null,
       created_by: userId,
     })
+    // Notify partner
+    if (partnerId) {
+      const typeLabel = newType === 'date_plan' ? 'date plan' : newType === 'reminder' ? 'pengingat' : 'acara'
+      try {
+        await fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: partnerId,
+            title: 'CoupleApp',
+            body: `${userName ?? 'Pasanganmu'} menambahkan ${typeLabel}: "${newTitle.trim()}"`,
+            url: '/app/calendar',
+          }),
+        })
+      } catch { /* optional */ }
+    }
+
     resetForm(); setSaving(false); setModalOpen(false); setDatePlanModal(false)
     loadData()
   }

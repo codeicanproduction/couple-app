@@ -11,8 +11,8 @@ interface MissYouButtonProps {
   coupleId: string | null
 }
 
-const COOLDOWN_HOURS = 4
-const MAX_PER_DAY = 3
+const COOLDOWN_MINUTES = 30
+const MAX_PER_DAY = 10
 
 function formatCountdown(ms: number): string {
   const totalMins = Math.ceil(ms / 60000)
@@ -63,7 +63,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
     const latest = rows[0]
     if (latest) {
       const latestMs = new Date(latest.created_at!).getTime()
-      const cooldownEnd = latestMs + COOLDOWN_HOURS * 3600 * 1000
+      const cooldownEnd = latestMs + COOLDOWN_MINUTES * 60 * 1000
       if (cooldownEnd > Date.now()) {
         setCooldownUntil(cooldownEnd)
       } else {
@@ -95,7 +95,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
 
     if (recent?.created_at) {
       const latestMs = new Date(recent.created_at).getTime()
-      const cooldownEnd = latestMs + COOLDOWN_HOURS * 3600 * 1000
+      const cooldownEnd = latestMs + COOLDOWN_MINUTES * 60 * 1000
       if (cooldownEnd > Date.now()) {
         setCooldownUntil(cooldownEnd)
         setSending(false)
@@ -112,7 +112,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
 
     if (!error) {
       setJustSent(true)
-      setCooldownUntil(Date.now() + COOLDOWN_HOURS * 3600 * 1000)
+      setCooldownUntil(Date.now() + COOLDOWN_MINUTES * 60 * 1000)
       setUsedToday(u => u + 1)
       setTimeout(() => setJustSent(false), 3000)
 
