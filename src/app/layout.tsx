@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   title: 'Nanti Kita',
   description: 'Aplikasi untuk pasangan Indonesia. Tabungan bersama, kalender, surat rahasia, dan obrolan seru.',
   keywords: ['couple', 'relationship', 'indonesia', 'pasangan', 'tabungan'],
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icons/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {

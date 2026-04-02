@@ -44,11 +44,13 @@ export default function LandingPage() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-16 text-center">
         {/* Logo */}
         <div className="animate-fade-in mb-6">
-          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-rose/10 shadow-glow">
-            <Heart className="h-10 w-10 text-rose" strokeWidth={1.5} fill="currentColor" fillOpacity={0.15} />
-          </div>
+          <img
+            src="/icons/logo-full.png"
+            alt="Nanti Kita"
+            className="mx-auto mb-4 h-24 w-24"
+          />
           <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-ink">
-            Nanti Kita
+            nanti kita
           </h1>
           <p className="text-lg font-semibold text-rose">
             Bucin tapi realistis.
