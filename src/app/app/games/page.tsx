@@ -1,9 +1,19 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Shuffle, MessageSquare, Sparkles, Lock, MessageCircleHeart, Zap } from 'lucide-react'
+import { Shuffle, MessageSquare, Sparkles, Lock, MessageCircleHeart, Zap, PawPrint } from 'lucide-react'
 
 const GAMES = [
+  {
+    id: 'pet',
+    title: 'Pet Kita',
+    desc: 'Rawat hewan peliharaan virtual berdua',
+    icon: PawPrint,
+    color: 'bg-amber-50 text-amber-600',
+    available: true,
+    href: '/app/pet',
+    badge: 'BARU',
+  },
   {
     id: 'samakan',
     title: 'Samakan',

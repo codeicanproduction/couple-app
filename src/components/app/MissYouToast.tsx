@@ -53,7 +53,7 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
 
     if (data) {
       // Only show if within last 24 hours
-      const ageHours = (Date.now() - new Date(data.created_at).getTime()) / 3600000
+      const ageHours = (Date.now() - new Date(data.created_at!).getTime()) / 3600000
       if (ageHours < 24) {
         setLatestMissYou(data as MissYouRow)
       }

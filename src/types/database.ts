@@ -155,6 +155,44 @@ export type Database = {
           },
         ]
       }
+      couple_pets: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          id: string
+          level: number
+          name: string
+          pet_type: string
+          xp: number
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          name: string
+          pet_type: string
+          xp?: number
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          name?: string
+          pet_type?: string
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_pets_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: true
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_transactions: {
         Row: {
           amount: number
@@ -450,6 +488,126 @@ export type Database = {
           },
         ]
       }
+      game_sessions: {
+        Row: {
+          id: string
+          couple_id: string
+          created_by: string
+          partner_id: string | null
+          chapter_id: string
+          status: string
+          rounds: Json
+          round_types: string[]
+          total_score: number
+          created_at: string
+          started_at: string | null
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          couple_id: string
+          created_by: string
+          partner_id?: string | null
+          chapter_id?: string
+          status?: string
+          rounds?: Json
+          round_types?: string[]
+          total_score?: number
+          created_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          couple_id?: string
+          created_by?: string
+          partner_id?: string | null
+          chapter_id?: string
+          status?: string
+          rounds?: Json
+          round_types?: string[]
+          total_score?: number
+          created_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      letters: {
+        Row: {
+          content: string
+          couple_id: string
+          created_at: string | null
+          id: string
+          is_opened: boolean | null
+          occasion: string | null
+          occasion_label: string | null
+          opened_at: string | null
+          photo_url: string | null
+          receiver_id: string
+          sender_id: string
+          unlock_date: string
+        }
+        Insert: {
+          content: string
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          is_opened?: boolean | null
+          occasion?: string | null
+          occasion_label?: string | null
+          opened_at?: string | null
+          photo_url?: string | null
+          receiver_id: string
+          sender_id: string
+          unlock_date: string
+        }
+        Update: {
+          content?: string
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          is_opened?: boolean | null
+          occasion?: string | null
+          occasion_label?: string | null
+          opened_at?: string | null
+          photo_url?: string | null
+          receiver_id?: string
+          sender_id?: string
+          unlock_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "letters_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "letters_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "letters_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mbti_results: {
         Row: {
           answers: Json
@@ -491,6 +649,184 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      miss_you: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          id: string
+          receiver_id: string
+          responded: boolean | null
+          responded_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          receiver_id: string
+          responded?: boolean | null
+          responded_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          receiver_id?: string
+          responded?: boolean | null
+          responded_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "miss_you_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "miss_you_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "miss_you_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_care_logs: {
+        Row: {
+          action_type: string
+          done_at: string | null
+          done_by: string
+          id: string
+          pet_id: string
+        }
+        Insert: {
+          action_type: string
+          done_at?: string | null
+          done_by: string
+          id?: string
+          pet_id: string
+        }
+        Update: {
+          action_type?: string
+          done_at?: string | null
+          done_by?: string
+          id?: string
+          pet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_care_logs_done_by_fkey"
+            columns: ["done_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_care_logs_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "couple_pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_care_roles: {
+        Row: {
+          actions: string[]
+          couple_id: string
+          id: string
+          pet_id: string
+          profile_id: string
+        }
+        Insert: {
+          actions: string[]
+          couple_id: string
+          id?: string
+          pet_id: string
+          profile_id: string
+        }
+        Update: {
+          actions?: string[]
+          couple_id?: string
+          id?: string
+          pet_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_care_roles_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_care_roles_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "couple_pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pet_care_roles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_mood_state: {
+        Row: {
+          cleanliness: number
+          happiness: number
+          hunger: number
+          id: string
+          mood: string
+          pet_id: string
+          thriving_since: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cleanliness?: number
+          happiness?: number
+          hunger?: number
+          id?: string
+          mood?: string
+          pet_id: string
+          thriving_since?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cleanliness?: number
+          happiness?: number
+          hunger?: number
+          id?: string
+          mood?: string
+          pet_id?: string
+          thriving_since?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_mood_state_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
+            referencedRelation: "couple_pets"
             referencedColumns: ["id"]
           },
         ]
@@ -646,204 +982,42 @@ export type Database = {
           },
         ]
       }
-      letters: {
-        Row: {
-          content: string
-          couple_id: string
-          created_at: string | null
-          id: string
-          is_opened: boolean | null
-          occasion: string | null
-          occasion_label: string | null
-          opened_at: string | null
-          receiver_id: string
-          sender_id: string
-          unlock_date: string  // timestamptz ISO string
-        }
-        Insert: {
-          content: string
-          couple_id: string
-          created_at?: string | null
-          id?: string
-          is_opened?: boolean | null
-          occasion?: string | null
-          occasion_label?: string | null
-          opened_at?: string | null
-          receiver_id: string
-          sender_id: string
-          unlock_date: string  // timestamptz ISO string
-        }
-        Update: {
-          content?: string
-          couple_id?: string
-          created_at?: string | null
-          id?: string
-          is_opened?: boolean | null
-          occasion?: string | null
-          occasion_label?: string | null
-          opened_at?: string | null
-          receiver_id?: string
-          sender_id?: string
-          unlock_date?: string  // timestamptz ISO string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "letters_couple_id_fkey"
-            columns: ["couple_id"]
-            isOneToOne: false
-            referencedRelation: "couples"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "letters_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "letters_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      miss_you: {
-        Row: {
-          couple_id: string
-          created_at: string
-          id: string
-          receiver_id: string | null
-          responded: boolean | null
-          responded_at: string | null
-          sender_id: string
-        }
-        Insert: {
-          couple_id: string
-          created_at?: string
-          id?: string
-          receiver_id?: string | null
-          responded?: boolean | null
-          responded_at?: string | null
-          sender_id: string
-        }
-        Update: {
-          couple_id?: string
-          created_at?: string
-          id?: string
-          receiver_id?: string | null
-          responded?: boolean | null
-          responded_at?: string | null
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "miss_you_couple_id_fkey"
-            columns: ["couple_id"]
-            isOneToOne: false
-            referencedRelation: "couples"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "miss_you_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      game_sessions: {
-        Row: {
-          id: string
-          couple_id: string
-          created_by: string
-          partner_id: string | null
-          chapter_id: string
-          status: string
-          rounds: Json
-          round_types: string[]
-          total_score: number
-          created_at: string
-          started_at: string | null
-          completed_at: string | null
-        }
-        Insert: {
-          id?: string
-          couple_id: string
-          created_by: string
-          partner_id?: string | null
-          chapter_id?: string
-          status?: string
-          rounds?: Json
-          round_types?: string[]
-          total_score?: number
-          created_at?: string
-          started_at?: string | null
-          completed_at?: string | null
-        }
-        Update: {
-          id?: string
-          couple_id?: string
-          created_by?: string
-          partner_id?: string | null
-          chapter_id?: string
-          status?: string
-          rounds?: Json
-          round_types?: string[]
-          total_score?: number
-          created_at?: string
-          started_at?: string | null
-          completed_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "game_sessions_couple_id_fkey"
-            columns: ["couple_id"]
-            isOneToOne: false
-            referencedRelation: "couples"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       wedding_budget_items: {
         Row: {
-          id: string
-          couple_id: string
-          category: string
-          name: string
-          estimated_cost: number
           actual_cost: number | null
+          category: string
+          couple_id: string
+          created_at: string
+          estimated_cost: number
+          id: string
           is_paid: boolean
+          name: string
           notes: string | null
           sort_order: number
-          created_at: string
         }
         Insert: {
-          id?: string
-          couple_id: string
-          category: string
-          name: string
-          estimated_cost?: number
           actual_cost?: number | null
+          category: string
+          couple_id: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
           is_paid?: boolean
+          name: string
           notes?: string | null
           sort_order?: number
-          created_at?: string
         }
         Update: {
-          id?: string
-          couple_id?: string
-          category?: string
-          name?: string
-          estimated_cost?: number
           actual_cost?: number | null
+          category?: string
+          couple_id?: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
           is_paid?: boolean
+          name?: string
           notes?: string | null
           sort_order?: number
-          created_at?: string
         }
         Relationships: [
           {

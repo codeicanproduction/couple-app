@@ -1,0 +1,42 @@
+import { redirect } from 'next/navigation'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import PetAdoptScreen from '@/components/app/PetAdoptScreen'
+
+export default async function AdoptPage() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+
+  const { data: membership } = await supabase
+    .from('couple_members')
+    .select('couple_id')
+    .eq('profile_id', user.id)
+    .single()
+
+  if (!membership) redirect('/app/home')
+
+  // Already has pet? Go to pet room
+  const { data: pet } = await supabase
+    .from('couple_pets')
+    .select('id')
+    .eq('couple_id', membership.couple_id)
+    .single()
+
+  if (pet) redirect('/app/pet')
+
+  // Get partner ID
+  const { data: partnerMember } = await supabase
+    .from('couple_members')
+    .select('profile_id')
+    .eq('couple_id', membership.couple_id)
+    .neq('profile_id', user.id)
+    .single()
+
+  return (
+    <PetAdoptScreen
+      coupleId={membership.couple_id}
+      userId={user.id}
+      partnerId={partnerMember?.profile_id || null}
+    />
+  )
+}
