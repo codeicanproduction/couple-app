@@ -4,7 +4,7 @@
   "description": "Persiapkan masa depan bersama pasanganmu",
   "start_url": "/app/home",
   "display": "standalone",
-  "background_color": "#FFF8F0",
+  "background_color": "#FFFFFF",
   "theme_color": "#FFF8F0",
   "orientation": "portrait",
   "scope": "/",
