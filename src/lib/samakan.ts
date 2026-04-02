@@ -135,12 +135,18 @@ export async function expireStaleSession(coupleId: string) {
 // ─── REALTIME HOOK ───
 
 export function useGameChannel(sessionId: string, userId: string) {
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
   const channelRef = useRef<RealtimeChannel | null>(null)
   const [isPartnerConnected, setIsPartnerConnected] = useState(false)
   const eventHandlerRef = useRef<((payload: BroadcastPayload) => void) | null>(null)
+  const userIdRef = useRef(userId)
+  userIdRef.current = userId
 
   useEffect(() => {
+    // Don't connect until we have a real userId
+    if (!userId || userId === 'init') return
+
+    const supabase = supabaseRef.current
     const channel = supabase.channel(`game:${sessionId}`, {
       config: { broadcast: { self: false } },
     })
@@ -158,7 +164,7 @@ export function useGameChannel(sessionId: string, userId: string) {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ user_id: userId, online_at: Date.now() })
+          await channel.track({ user_id: userIdRef.current, online_at: Date.now() })
         }
       })
 
@@ -167,7 +173,7 @@ export function useGameChannel(sessionId: string, userId: string) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [sessionId, userId, supabase])
+  }, [sessionId, userId])
 
   const broadcast = useCallback((payload: BroadcastPayload) => {
     channelRef.current?.send({
