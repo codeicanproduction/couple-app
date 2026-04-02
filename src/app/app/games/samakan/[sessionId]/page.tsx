@@ -50,6 +50,7 @@ export default function SamakanGamePage() {
   const [myAvatar, setMyAvatar] = useState<string | null>(null)
   const [partnerName, setPartnerName] = useState('')
   const [partnerAvatar, setPartnerAvatar] = useState<string | null>(null)
+  const [partnerUserId, setPartnerUserId] = useState<string | null>(null)
 
   // Game state
   const [phase, setPhase] = useState<GamePhase>('connecting')
@@ -122,6 +123,7 @@ export default function SamakanGamePage() {
 
       // Load partner profile
       const partnerId = isHost ? sess.partner_id : sess.created_by
+      setPartnerUserId(partnerId ?? null)
       if (partnerId) {
         const { data: partnerProfile } = await supabase
           .from('profiles')
@@ -403,6 +405,8 @@ export default function SamakanGamePage() {
         isPartnerConnected={isPartnerConnected}
         isMyReady={isMyReady}
         isPartnerReady={isPartnerReady}
+        sessionId={sessionId}
+        partnerId={partnerUserId}
         onReady={() => {
           setIsMyReady(true)
           broadcast({ type: 'player_ready', playerId: userId })

@@ -1,5 +1,8 @@
 'use client'
 
+import { useState } from 'react'
+import { Bell, Check } from 'lucide-react'
+
 interface SamakanLobbyProps {
   myName: string
   myAvatar: string | null
@@ -9,18 +12,37 @@ interface SamakanLobbyProps {
   isMyReady: boolean
   isPartnerReady: boolean
   onReady: () => void
+  sessionId: string
+  partnerId: string | null
 }
 
 export default function SamakanLobby({
-  myName,
-  myAvatar,
-  partnerName,
-  partnerAvatar,
-  isPartnerConnected,
-  isMyReady,
-  isPartnerReady,
-  onReady,
+  myName, myAvatar, partnerName, partnerAvatar,
+  isPartnerConnected, isMyReady, isPartnerReady, onReady,
+  sessionId, partnerId,
 }: SamakanLobbyProps) {
+  const [notifSent, setNotifSent] = useState(false)
+  const [notifSending, setNotifSending] = useState(false)
+
+  async function sendReminder() {
+    if (!partnerId || notifSent || notifSending) return
+    setNotifSending(true)
+    try {
+      await fetch('/api/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: partnerId,
+          title: 'CoupleApp',
+          body: `${myName} nungguin kamu main Samakan! Ayo join sekarang`,
+          url: `/app/games/samakan/${sessionId}`,
+        }),
+      })
+      setNotifSent(true)
+    } catch { /* ignore */ }
+    setNotifSending(false)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-ink to-gray-900 px-6">
       <h2 className="mb-2 text-2xl font-bold text-white">Samakan</h2>
@@ -102,7 +124,32 @@ export default function SamakanLobby({
         </div>
       )}
 
-      {!isPartnerConnected && (
+      {/* Notify partner button — shown when partner hasn't joined */}
+      {!isPartnerConnected && partnerId && (
+        <button
+          onClick={sendReminder}
+          disabled={notifSent || notifSending}
+          className={`mt-6 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all active:scale-95 ${
+            notifSent
+              ? 'bg-emerald-500/20 text-emerald-400'
+              : 'bg-white/10 text-white hover:bg-white/20'
+          }`}
+        >
+          {notifSent ? (
+            <>
+              <Check className="h-4 w-4" />
+              Notifikasi terkirim!
+            </>
+          ) : (
+            <>
+              <Bell className="h-4 w-4" />
+              {notifSending ? 'Mengirim...' : 'Panggil pasangan'}
+            </>
+          )}
+        </button>
+      )}
+
+      {!isPartnerConnected && !partnerId && (
         <p className="mt-6 text-xs text-white/30 text-center max-w-xs">
           Pasanganmu akan mendapat notifikasi. Mereka bisa join dari link yang sama.
         </p>
