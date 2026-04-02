@@ -48,7 +48,7 @@ export default function LandingPage() {
             <Heart className="h-10 w-10 text-rose" strokeWidth={1.5} fill="currentColor" fillOpacity={0.15} />
           </div>
           <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-ink">
-            CoupleApp
+            Nanti Kita
           </h1>
           <p className="text-lg font-semibold text-rose">
             Bucin tapi realistis.
@@ -116,7 +116,7 @@ export default function LandingPage() {
       {/* Footer */}
       <div className="px-6 py-4 text-center">
         <p className="text-[11px] text-ink-muted/50">
-          CoupleApp &copy; 2026. Dibuat dengan cinta di Indonesia.
+          Nanti Kita &copy; 2026. Dibuat dengan cinta di Indonesia.
         </p>
       </div>
     </div>

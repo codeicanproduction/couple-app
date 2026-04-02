@@ -215,7 +215,7 @@ export default function CalendarPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientId: partnerId,
-            title: 'CoupleApp',
+            title: 'Nanti Kita',
             body: `${userName ?? 'Pasanganmu'} menambahkan ${typeLabel}: "${newTitle.trim()}"`,
             url: '/app/calendar',
           }),

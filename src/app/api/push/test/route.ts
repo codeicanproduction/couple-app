@@ -31,7 +31,7 @@ export async function GET() {
       try {
         const r = await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } },
-          JSON.stringify({ title: '🔔 Test Notifikasi', body: 'Notifikasi berhasil! CoupleApp works.', url: '/app/home' })
+          JSON.stringify({ title: '🔔 Test Notifikasi', body: 'Notifikasi berhasil! Nanti Kita works.', url: '/app/home' })
         )
         results.push({ endpoint: sub.endpoint.substring(0, 40) + '...', status: r.statusCode })
       } catch (e: unknown) {

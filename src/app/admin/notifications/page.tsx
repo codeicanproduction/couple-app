@@ -17,13 +17,13 @@ export default function AdminNotificationsPage() {
   const [allProfiles, setAllProfiles] = useState<{ id: string; name: string | null }[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState('')
-  const [title, setTitle] = useState('🔔 CoupleApp')
+  const [title, setTitle] = useState('🔔 Nanti Kita')
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
   // Broadcast state
-  const [broadcastTitle, setBroadcastTitle] = useState('📢 CoupleApp')
+  const [broadcastTitle, setBroadcastTitle] = useState('📢 Nanti Kita')
   const [broadcastBody, setBroadcastBody] = useState('')
   const [broadcasting, setBroadcasting] = useState(false)
   const [broadcastResult, setBroadcastResult] = useState<{ ok: boolean; msg: string } | null>(null)
@@ -74,7 +74,7 @@ export default function AdminNotificationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: selectedUser,
-          title: title || '🔔 CoupleApp',
+          title: title || '🔔 Nanti Kita',
           body: body.trim(),
           url: '/app/home',
         }),
@@ -107,7 +107,7 @@ export default function AdminNotificationsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientId: userId,
-            title: broadcastTitle || '📢 CoupleApp',
+            title: broadcastTitle || '📢 Nanti Kita',
             body: broadcastBody.trim(),
             url: '/app/home',
           }),
@@ -194,7 +194,7 @@ export default function AdminNotificationsPage() {
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-rose focus:outline-none"
-                placeholder="🔔 CoupleApp"
+                placeholder="🔔 Nanti Kita"
               />
             </div>
 
@@ -240,7 +240,7 @@ export default function AdminNotificationsPage() {
                 value={broadcastTitle}
                 onChange={e => setBroadcastTitle(e.target.value)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-rose focus:outline-none"
-                placeholder="📢 CoupleApp"
+                placeholder="📢 Nanti Kita"
               />
             </div>
 

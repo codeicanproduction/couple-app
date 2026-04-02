@@ -42,7 +42,7 @@ export default function OnboardingInvitePage() {
 
   function shareWhatsApp() {
     const text = encodeURIComponent(
-      `Hei! Aku undang kamu bergabung di CoupleApp bersama aku 💕\n\nKlik link ini untuk langsung bergabung:\n${inviteLink}\n\nAtau masukkan kode: *${inviteCode}*`
+      `Hei! Aku undang kamu bergabung di Nanti Kita bersama aku 💕\n\nKlik link ini untuk langsung bergabung:\n${inviteLink}\n\nAtau masukkan kode: *${inviteCode}*`
     )
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }

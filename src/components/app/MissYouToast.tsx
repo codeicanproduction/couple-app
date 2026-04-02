@@ -87,7 +87,7 @@ export default function MissYouToast({ myId, myName, partnerId, partnerName, cou
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: partnerId,
-          title: '💓 CoupleApp',
+          title: '💓 Nanti Kita',
           body: `${myName} kangen kamu juga!`,
           url: '/app/home',
         }),

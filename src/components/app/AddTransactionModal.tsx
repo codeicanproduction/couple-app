@@ -113,7 +113,7 @@ export default function AddTransactionModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientId: partnerId,
-            title: 'CoupleApp',
+            title: 'Nanti Kita',
             body: notifBody,
             url: '/app/finance',
           }),

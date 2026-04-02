@@ -26,7 +26,7 @@ export default function AdminSidebar() {
           <Heart className="h-4 w-4 text-white" fill="currentColor" />
         </div>
         <div>
-          <p className="text-sm font-bold text-ink">Couple App</p>
+          <p className="text-sm font-bold text-ink">Nanti Kita</p>
           <p className="text-[10px] text-ink-muted">Admin Panel</p>
         </div>
       </div>

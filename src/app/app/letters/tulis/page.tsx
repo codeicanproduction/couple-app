@@ -130,7 +130,7 @@ export default function WriteLetter() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: partnerId,
-          title: 'CoupleApp',
+          title: 'Nanti Kita',
           body: `Kamu punya surat yang bisa dibuka ${formatWIB(unlockTimestamp)}`,
           url: '/app/letters',
         }),

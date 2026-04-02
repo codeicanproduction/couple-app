@@ -11,7 +11,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'CoupleApp',
+  title: 'Nanti Kita',
   description: 'Aplikasi untuk pasangan Indonesia. Tabungan bersama, kalender, surat rahasia, dan obrolan seru.',
   keywords: ['couple', 'relationship', 'indonesia', 'pasangan', 'tabungan'],
 }

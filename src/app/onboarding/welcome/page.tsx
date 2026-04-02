@@ -34,7 +34,7 @@ export default function OnboardingWelcomePage() {
         Selamat Datang!
       </h1>
       <p className="mb-8 max-w-xs text-sm leading-relaxed text-ink-muted">
-        CoupleApp membantu kamu dan pasangan mempersiapkan
+        Nanti Kita membantu kamu dan pasangan mempersiapkan
         masa depan bersama &mdash; dari hubungan, keuangan, sampai
         momen spesial kalian.
       </p>

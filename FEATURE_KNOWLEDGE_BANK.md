@@ -1,8 +1,8 @@
-# CoupleApp — Feature Knowledge Bank
+# Nanti Kita — Feature Knowledge Bank
 > Last updated: 2 April 2026
 
 ## Product Overview
-CoupleApp adalah PWA untuk pasangan Indonesia yang serius mempersiapkan masa depan bersama. Tagline: **"Bucin tapi realistis."**
+Nanti Kita adalah PWA untuk pasangan Indonesia yang serius mempersiapkan masa depan bersama. Tagline: **"Bucin tapi realistis."**
 
 **Tech Stack:** Next.js 14 App Router, Supabase (Auth + DB + Realtime + Storage), Tailwind CSS, TypeScript, PWA (Service Worker + Push Notifications)
 

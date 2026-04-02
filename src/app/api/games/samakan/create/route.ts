@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         const { data: subs } = await admin.from('push_subscriptions').select('endpoint, p256dh, auth_key').eq('profile_id', partnerId)
         if (subs) {
           const payload = JSON.stringify({
-            title: 'CoupleApp',
+            title: 'Nanti Kita',
             body: `${profile?.name ?? 'Pasanganmu'} ngajak main Samakan!`,
             url: `/app/games/samakan/${session.id}`,
           })

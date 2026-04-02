@@ -209,7 +209,7 @@ export default function ProfilePage() {
   function shareWhatsApp() {
     const link = `${window.location.origin}/invite/${inviteCode}`
     const text = encodeURIComponent(
-      `Hei! Aku undang kamu bergabung di CoupleApp 💕\n\nKlik link ini:\n${link}\n\nAtau masukkan kode: *${inviteCode}*`
+      `Hei! Aku undang kamu bergabung di Nanti Kita 💕\n\nKlik link ini:\n${link}\n\nAtau masukkan kode: *${inviteCode}*`
     )
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }

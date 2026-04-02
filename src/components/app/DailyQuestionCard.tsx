@@ -117,7 +117,7 @@ export default function DailyQuestionCard({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientId: partnerId,
-            title: 'CoupleApp',
+            title: 'Nanti Kita',
             body: `${userName ?? 'Pasanganmu'} sudah jawab pertanyaan hari ini! Giliranmu`,
             url: '/app/home',
           }),

@@ -33,7 +33,7 @@ export default function SamakanLobby({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: partnerId,
-          title: 'CoupleApp',
+          title: 'Nanti Kita',
           body: `${myName} nungguin kamu main Samakan! Ayo join sekarang`,
           url: `/app/games/samakan/${sessionId}`,
         }),

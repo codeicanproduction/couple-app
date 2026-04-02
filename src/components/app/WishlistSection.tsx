@@ -122,7 +122,7 @@ export default function WishlistSection({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientId: partnerId,
-            title: 'CoupleApp',
+            title: 'Nanti Kita',
             body: `${name} menambahkan "${newName.trim()}"${priceStr} ke wishlist`,
             url: '/app/partner',
           }),

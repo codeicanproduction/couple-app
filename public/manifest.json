@@ -1,6 +1,6 @@
 {
-  "name": "CoupleApp - Kesiapan Bersama",
-  "short_name": "CoupleApp",
+  "name": "Nanti Kita - Kesiapan Bersama",
+  "short_name": "Nanti Kita",
   "description": "Persiapkan masa depan bersama pasanganmu",
   "start_url": "/app/home",
   "display": "standalone",

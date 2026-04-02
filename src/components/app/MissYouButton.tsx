@@ -123,7 +123,7 @@ export default function MissYouButton({ myId, myName, partnerId, coupleId }: Mis
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientId: partnerId,
-            title: '💓 CoupleApp',
+            title: '💓 Nanti Kita',
             body: `${myName} lagi kangen kamu`,
             url: '/app/home',
           }),

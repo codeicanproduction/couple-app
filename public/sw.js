@@ -107,7 +107,7 @@ self.addEventListener('fetch', (event) => {
 
 // ===== Push Notifications =====
 self.addEventListener('push', (event) => {
-  let data = { title: 'CoupleApp', body: 'Ada yang baru!', url: '/app/home' }
+  let data = { title: 'Nanti Kita', body: 'Ada yang baru!', url: '/app/home' }
 
   if (event.data) {
     try {
