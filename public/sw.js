@@ -1,4 +1,4 @@
-const CACHE_NAME = 'coupleapp-v2'
+const CACHE_NAME = 'nantikita-v3'
 const APP_SHELL_URLS = [
   '/',
   '/app/home',
