@@ -14,16 +14,16 @@ interface SamakanResultsProps {
 
 const ROUND_TYPE_LABELS: Record<RoundType, string> = {
   pilih_sama: 'Pilih Sama',
-  ketik_sama: 'Ketik Sama',
-  hitung_bareng: 'Hitung Bareng',
+  slider_sama: 'Slider',
+  tebak_angka: 'Tebak Angka',
   tebak_pasangan: 'Tebak Pasangan',
   tap_bareng: 'Tap Bareng',
 }
 
 const ROUND_TYPE_EMOJI: Record<RoundType, string> = {
   pilih_sama: '🎯',
-  ketik_sama: '✍️',
-  hitung_bareng: '🔢',
+  slider_sama: '📊',
+  tebak_angka: '🔢',
   tebak_pasangan: '🔮',
   tap_bareng: '👆',
 }

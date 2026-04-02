@@ -12,21 +12,23 @@ export function scorePilihSama(a: string, b: string): number {
   return a === b ? 20 : 0
 }
 
-export function scoreKetikSama(a: string, b: string): number {
-  const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
-  return normalize(a) === normalize(b) ? 20 : 0
-}
-
-export function scoreHitungBareng(total: number, target: number): number {
-  return total === target ? 20 : 0
+/** Gradient scoring for slider-based rounds: closer = higher score */
+export function scoreSliderDiff(a: number, b: number): number {
+  const diff = Math.abs(a - b)
+  if (diff === 0) return 20
+  if (diff === 1) return 17
+  if (diff === 2) return 14
+  if (diff === 3) return 10
+  if (diff === 4) return 7
+  if (diff === 5) return 5
+  return 3 // diff 6-9: still get points, never zero
 }
 
 export function scoreTebakPasangan(
   aReal: string, aGuess: string, bReal: string, bGuess: string
 ): number {
-  const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
-  const match1 = norm(aReal) === norm(bGuess) ? 1 : 0
-  const match2 = norm(bReal) === norm(aGuess) ? 1 : 0
+  const match1 = aReal === bGuess ? 1 : 0
+  const match2 = bReal === aGuess ? 1 : 0
   if (match1 + match2 === 2) return 20
   if (match1 + match2 === 1) return 10
   return 0
@@ -43,8 +45,8 @@ export function scoreTapBareng(tsA: number, tsB: number): number {
 export function getScoreForRound(type: RoundType, hostAnswer: unknown, guestAnswer: unknown): number {
   switch (type) {
     case 'pilih_sama': return scorePilihSama(hostAnswer as string, guestAnswer as string)
-    case 'ketik_sama': return scoreKetikSama(hostAnswer as string, guestAnswer as string)
-    case 'hitung_bareng': return scoreHitungBareng(hostAnswer as number, guestAnswer as number)
+    case 'slider_sama': return scoreSliderDiff(hostAnswer as number, guestAnswer as number)
+    case 'tebak_angka': return scoreSliderDiff(hostAnswer as number, guestAnswer as number)
     case 'tebak_pasangan': {
       const h = hostAnswer as { real: string; guess: string }
       const g = guestAnswer as { real: string; guess: string }

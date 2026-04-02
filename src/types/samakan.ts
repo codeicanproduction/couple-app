@@ -1,6 +1,6 @@
 export type GameStatus = 'waiting' | 'playing' | 'completed' | 'expired'
 export type PlayerRole = 'host' | 'guest'
-export type RoundType = 'pilih_sama' | 'ketik_sama' | 'hitung_bareng' | 'tebak_pasangan' | 'tap_bareng'
+export type RoundType = 'pilih_sama' | 'slider_sama' | 'tebak_angka' | 'tebak_pasangan' | 'tap_bareng'
 
 export type GamePhase =
   | 'connecting'
@@ -18,20 +18,21 @@ export type GamePhase =
 export interface PilihSamaConfig {
   type: 'pilih_sama'
   storyPrompt: string
-  options: string[] // 4 emoji/text options
+  options: string[]
 }
 
-export interface KetikSamaConfig {
-  type: 'ketik_sama'
+export interface SliderSamaConfig {
+  type: 'slider_sama'
   storyPrompt: string
-  category: string
-  timeLimit: number // seconds
+  question: string
+  minLabel: string  // e.g. "Tidak suka"
+  maxLabel: string  // e.g. "Sangat suka"
 }
 
-export interface HitungBarengConfig {
-  type: 'hitung_bareng'
+export interface TebakAngkaConfig {
+  type: 'tebak_angka'
   storyPrompt: string
-  target: number
+  question: string
 }
 
 export interface TebakPasanganConfig {
@@ -39,6 +40,7 @@ export interface TebakPasanganConfig {
   storyPrompt: string
   questionForSelf: string
   questionForPartner: string
+  options: string[]  // multiple choice options
 }
 
 export interface TapBarengConfig {
@@ -48,8 +50,8 @@ export interface TapBarengConfig {
 
 export type RoundConfig =
   | PilihSamaConfig
-  | KetikSamaConfig
-  | HitungBarengConfig
+  | SliderSamaConfig
+  | TebakAngkaConfig
   | TebakPasanganConfig
   | TapBarengConfig
 
@@ -60,7 +62,7 @@ export interface RoundResult {
   config: RoundConfig
   hostAnswer: unknown
   guestAnswer: unknown
-  score: number // 0-20
+  score: number
 }
 
 // --- Chapter ---
@@ -68,14 +70,14 @@ export interface Chapter {
   id: string
   title: string
   subtitle: string
-  gradient: string // tailwind gradient classes
-  bgClass: string  // dark bg class
-  intro: string    // story intro narration
-  bridges: string[] // story bridges between rounds (4 total, between 5 rounds)
+  gradient: string
+  bgClass: string
+  intro: string
+  bridges: string[]
   endings: {
-    high: string   // 80-100%
-    mid: string    // 50-79%
-    low: string    // 0-49%
+    high: string
+    mid: string
+    low: string
   }
   rounds: RoundConfig[]
 }
@@ -89,7 +91,6 @@ export type BroadcastPayload =
   | { type: 'player_answer'; playerId: string; roundIndex: number; answer: unknown }
   | { type: 'round_reveal'; roundIndex: number; result: RoundResult }
   | { type: 'game_complete'; totalScore: number; results: RoundResult[] }
-  | { type: 'hitung_move'; playerId: string; value: number; runningTotal: number }
   | { type: 'tap_timestamp'; playerId: string; timestamp: number }
   | { type: 'sync_state'; phase: GamePhase; currentRound: number; results: RoundResult[] }
   | { type: 'story_next' }
