@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  LogOut, Heart, ChevronRight, Pencil, Check,
+  LogOut, Heart, ChevronRight, Pencil, Check, Link2, Copy,
   Bell, User, Brain, Wallet, CalendarDays, Gamepad2,
-  Mail, Share2, HelpCircle, Shield,
+  Mail, Share2, HelpCircle, Shield, MessageCircle, Users,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { daysSince, formatDateID, getRelationshipLevel } from '@/lib/dates'
@@ -29,12 +29,22 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [signingOut, setSigningOut] = useState(false)
 
+  const [hasPartner, setHasPartner] = useState(true)
+  const [coupleId, setCoupleId] = useState<string | null>(null)
+
   // Edit profile state
   const [editOpen, setEditOpen] = useState(false)
   const [editName, setEditName] = useState('')
   const [editBirthday, setEditBirthday] = useState('')
   const [editRelDate, setEditRelDate] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // Bind partner state
+  const [bindMode, setBindMode] = useState<'none' | 'join'>('none')
+  const [bindCode, setBindCode] = useState('')
+  const [bindError, setBindError] = useState('')
+  const [bindLoading, setBindLoading] = useState(false)
+  const [codeCopied, setCodeCopied] = useState(false)
 
   const loadData = useCallback(async () => {
     const supabase = createClient()
@@ -52,13 +62,18 @@ export default function ProfilePage() {
       .from('couple_members').select('couple_id').eq('profile_id', user.id).single()
 
     if (membership?.couple_id) {
+      setCoupleId(membership.couple_id)
       const { data: allMembers } = await supabase
         .from('couple_members').select('profile_id').eq('couple_id', membership.couple_id)
-      if ((allMembers?.length ?? 0) < 2) {
+      const partnerExists = (allMembers?.length ?? 0) >= 2
+      setHasPartner(partnerExists)
+      if (!partnerExists) {
         const { data: couple } = await supabase
           .from('couples').select('invite_code').eq('id', membership.couple_id).single()
         setInviteCode(couple?.invite_code ?? null)
       }
+    } else {
+      setHasPartner(false)
     }
     setLoading(false)
   }, [])
@@ -94,6 +109,111 @@ export default function ProfilePage() {
     router.push('/auth/login')
   }
 
+  async function handleJoinPartner(e: React.FormEvent) {
+    e.preventDefault()
+    if (!bindCode.trim() || !userId) return
+    setBindError('')
+    setBindLoading(true)
+
+    const supabase = createClient()
+    const code = bindCode.trim().toUpperCase()
+
+    // Find the couple with this invite code
+    const { data: targetCouple, error: findErr } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('invite_code', code)
+      .single()
+
+    if (findErr || !targetCouple) {
+      setBindError('Kode undangan tidak ditemukan')
+      setBindLoading(false)
+      return
+    }
+
+    // Check it's not my own couple
+    if (targetCouple.id === coupleId) {
+      setBindError('Ini kode undangan kamu sendiri')
+      setBindLoading(false)
+      return
+    }
+
+    // Check target couple isn't full
+    const { count: targetCount } = await supabase
+      .from('couple_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('couple_id', targetCouple.id)
+
+    if ((targetCount ?? 0) >= 2) {
+      setBindError('Pasangan ini sudah penuh')
+      setBindLoading(false)
+      return
+    }
+
+    // Leave my current solo couple (delete member + couple if solo)
+    if (coupleId) {
+      await supabase.from('couple_members').delete().eq('couple_id', coupleId).eq('profile_id', userId)
+      // Check if couple is now empty, delete it
+      const { count: remainingMembers } = await supabase
+        .from('couple_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('couple_id', coupleId)
+      if ((remainingMembers ?? 0) === 0) {
+        // Clean up solo couple data
+        await supabase.from('couple_events').delete().eq('couple_id', coupleId)
+        await supabase.from('couples').delete().eq('id', coupleId)
+      }
+    }
+
+    // Join partner's couple
+    const { error: joinErr } = await supabase
+      .from('couple_members')
+      .insert({ couple_id: targetCouple.id, profile_id: userId })
+
+    if (joinErr) {
+      setBindError(joinErr.message)
+      setBindLoading(false)
+      return
+    }
+
+    // Seed my calendar events into the new couple
+    const { data: myProfile } = await supabase
+      .from('profiles').select('name, birthday, relationship_start_date').eq('id', userId).single()
+
+    if (myProfile?.birthday) {
+      await supabase.from('couple_events').insert({
+        couple_id: targetCouple.id,
+        title: `Ulang Tahun ${myProfile.name ?? 'Pasangan'}`,
+        event_date: myProfile.birthday,
+        event_type: 'birthday',
+        is_recurring: true,
+        event_scope: 'couple',
+        created_by: userId,
+      })
+    }
+
+    setBindLoading(false)
+    setBindMode('none')
+    setBindCode('')
+    loadData()
+    router.refresh()
+  }
+
+  function copyInviteLink() {
+    const link = `${window.location.origin}/invite/${inviteCode}`
+    navigator.clipboard.writeText(link)
+    setCodeCopied(true)
+    setTimeout(() => setCodeCopied(false), 2000)
+  }
+
+  function shareWhatsApp() {
+    const link = `${window.location.origin}/invite/${inviteCode}`
+    const text = encodeURIComponent(
+      `Hei! Aku undang kamu bergabung di CoupleApp 💕\n\nKlik link ini:\n${link}\n\nAtau masukkan kode: *${inviteCode}*`
+    )
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center py-20"><div className="h-6 w-6 animate-spin rounded-full border-2 border-rose border-t-transparent" /></div>
   }
@@ -110,11 +230,6 @@ export default function ProfilePage() {
   ]
 
   const SETTING_ITEMS = [
-    { icon: Share2, label: 'Undang Pasangan', show: !!inviteCode, action: () => {
-      const link = `${window.location.origin}/invite/${inviteCode}`
-      navigator.clipboard.writeText(link)
-      alert('Link undangan tersalin!')
-    }},
     { icon: HelpCircle, label: 'Bantuan', show: true, action: () => {} },
     { icon: Shield, label: 'Kebijakan Privasi', show: true, action: () => {} },
   ]
@@ -165,6 +280,72 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {/* ===== HUBUNGKAN PASANGAN (only when solo) ===== */}
+        {!hasPartner && (
+          <div className="rounded-2xl border border-rose/20 bg-gradient-to-br from-rose-50 to-white p-5 shadow-card">
+            <div className="mb-3 flex items-center gap-2">
+              <Users className="h-4 w-4 text-rose" />
+              <h3 className="text-sm font-bold text-ink">Hubungkan Pasangan</h3>
+            </div>
+
+            {bindMode === 'none' ? (
+              <div className="space-y-3">
+                {/* Option 1: Share my code */}
+                {inviteCode && (
+                  <div className="rounded-xl border border-border bg-white p-4">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink-muted">Kode Undanganmu</p>
+                    <p className="mb-3 font-mono text-2xl font-bold tracking-[0.2em] text-rose">{inviteCode}</p>
+                    <div className="flex gap-2">
+                      <button onClick={copyInviteLink}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border py-2 text-xs font-semibold text-ink-muted hover:border-rose hover:text-rose">
+                        {codeCopied ? <><Check className="h-3 w-3 text-sage-dark" /> Tersalin!</> : <><Copy className="h-3 w-3" /> Salin Link</>}
+                      </button>
+                      <button onClick={shareWhatsApp}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#25D366] py-2 text-xs font-semibold text-white">
+                        <MessageCircle className="h-3 w-3" /> WhatsApp
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 2: Enter partner's code */}
+                <button onClick={() => setBindMode('join')}
+                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-white p-3 text-left hover:border-rose">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sage/15">
+                    <Link2 className="h-4 w-4 text-sage-dark" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-ink">Punya kode dari pasangan?</p>
+                    <p className="text-xs text-ink-muted">Masukkan kode undangan mereka</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-ink-muted" />
+                </button>
+              </div>
+            ) : (
+              /* Join mode — enter partner's code */
+              <form onSubmit={handleJoinPartner} className="space-y-3">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Masukkan kode undangan"
+                    value={bindCode}
+                    onChange={e => setBindCode(e.target.value.toUpperCase())}
+                    className="w-full rounded-xl border border-border bg-white px-4 py-3 font-mono text-center text-lg font-bold tracking-widest text-ink placeholder:text-ink-muted/40 placeholder:font-sans placeholder:text-sm placeholder:tracking-normal focus:border-rose focus:outline-none focus:ring-2 focus:ring-rose/20"
+                    maxLength={8}
+                    autoFocus
+                  />
+                  {bindError && <p className="mt-1 text-xs text-red-500">{bindError}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" loading={bindLoading} size="sm">Gabung</Button>
+                  <button type="button" onClick={() => { setBindMode('none'); setBindError('') }}
+                    className="px-4 py-2 text-sm text-ink-muted">Batal</button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* ===== NOTIFICATION TOGGLE ===== */}
         <NotificationToggle />
