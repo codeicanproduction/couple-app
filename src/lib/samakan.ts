@@ -151,20 +151,26 @@ export function useGameChannel(sessionId: string, userId: string) {
       config: { broadcast: { self: false } },
     })
 
+    const checkPresence = () => {
+      const state = channel.presenceState()
+      const keys = Object.keys(state)
+      setIsPartnerConnected(keys.length >= 2)
+    }
+
     channel
       .on('broadcast', { event: 'game_event' }, ({ payload }) => {
         if (eventHandlerRef.current) {
           eventHandlerRef.current(payload as BroadcastPayload)
         }
       })
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState()
-        const keys = Object.keys(state)
-        setIsPartnerConnected(keys.length >= 2)
-      })
+      .on('presence', { event: 'sync' }, checkPresence)
+      .on('presence', { event: 'join' }, checkPresence)
+      .on('presence', { event: 'leave' }, checkPresence)
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({ user_id: userIdRef.current, online_at: Date.now() })
+          // Check presence immediately after tracking
+          setTimeout(checkPresence, 500)
         }
       })
 

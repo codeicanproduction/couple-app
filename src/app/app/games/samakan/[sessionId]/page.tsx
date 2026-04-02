@@ -38,7 +38,8 @@ export default function SamakanGamePage() {
   const params = useParams()
   const router = useRouter()
   const sessionId = params.sessionId as string
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
 
   // Core state
   const [session, setSession] = useState<GameSession | null>(null)
@@ -78,7 +79,7 @@ export default function SamakanGamePage() {
   const chapterRef = useRef(chapter); chapterRef.current = chapter
 
   // Realtime channel
-  const { broadcast, onEvent, isPartnerConnected } = useGameChannel(sessionId, userId || 'init')
+  const { broadcast, onEvent, isPartnerConnected } = useGameChannel(sessionId, userId)
 
   // ─── AUDIO ───
   useEffect(() => {
@@ -147,10 +148,20 @@ export default function SamakanGamePage() {
       }
 
       setPhase('lobby')
-      broadcast({ type: 'player_joined', playerId: user.id, name: profile?.name ?? 'Kamu', avatarUrl: profile?.avatar_url ?? null })
+      // player_joined broadcast is handled by the effect below (after channel connects)
     }
     init()
   }, [sessionId])
+
+  // ─── ANNOUNCE SELF once channel is connected ───
+  useEffect(() => {
+    if (!userId || !isPartnerConnected === undefined || phase !== 'lobby') return
+    // Small delay to ensure channel is fully subscribed
+    const t = setTimeout(() => {
+      broadcast({ type: 'player_joined', playerId: userId, name: myName || 'Kamu', avatarUrl: myAvatar })
+    }, 500)
+    return () => clearTimeout(t)
+  }, [userId, phase]) // fires when userId loads and we're in lobby
 
   // ─── HOST: both ready → start game ───
   useEffect(() => {
