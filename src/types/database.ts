@@ -920,6 +920,12 @@ export type Database = {
           },
         ]
       }
+      spending_results: {
+        Row: { id: string; couple_id: string; profile_id: string; spending_type: string; scores: Json; answers: Json; created_at: string | null }
+        Insert: { id?: string; couple_id: string; profile_id: string; spending_type: string; scores: Json; answers: Json; created_at?: string | null }
+        Update: { id?: string; couple_id?: string; profile_id?: string; spending_type?: string; scores?: Json; answers?: Json; created_at?: string | null }
+        Relationships: []
+      }
       savings_entries: {
         Row: {
           id: string

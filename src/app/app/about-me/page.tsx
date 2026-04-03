@@ -43,9 +43,9 @@ const TESTS = [
     desc: 'Gaya kamu mengelola & membelanjakan uang',
     icon: Wallet,
     color: 'bg-gold/15 text-yellow-700',
-    available: false,
-    href: '#',
-    badge: 'Segera',
+    available: true,
+    href: '/app/about-me/spending-habits',
+    badge: 'BARU',
   },
   {
     id: 'attachment-style',
