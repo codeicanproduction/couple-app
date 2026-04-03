@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Check, X } from 'lucide-react'
 import type { RoundResult } from '@/types/samakan'
 
-interface SamakanRevealProps {
+interface SinkronisasiRevealProps {
   result: RoundResult
   myName: string
   partnerName: string
@@ -24,7 +24,7 @@ function formatAnswer(answer: unknown): string {
   return String(answer)
 }
 
-export default function SamakanReveal({ result, myName, partnerName, onNext }: SamakanRevealProps) {
+export default function SinkronisasiReveal({ result, myName, partnerName, onNext }: SinkronisasiRevealProps) {
   const [showScore, setShowScore] = useState(false)
 
   useEffect(() => {

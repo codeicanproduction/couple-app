@@ -34,14 +34,6 @@ export function scoreTebakPasangan(
   return 0
 }
 
-export function scoreTapBareng(tsA: number, tsB: number): number {
-  const diff = Math.abs(tsA - tsB)
-  if (diff < 200) return 20
-  if (diff < 500) return 15
-  if (diff < 1000) return 10
-  return 5
-}
-
 export function getScoreForRound(type: RoundType, hostAnswer: unknown, guestAnswer: unknown): number {
   switch (type) {
     case 'pilih_sama': return scorePilihSama(hostAnswer as string, guestAnswer as string)
@@ -52,7 +44,6 @@ export function getScoreForRound(type: RoundType, hostAnswer: unknown, guestAnsw
       const g = guestAnswer as { real: string; guess: string }
       return scoreTebakPasangan(h.real, h.guess, g.real, g.guess)
     }
-    case 'tap_bareng': return scoreTapBareng(hostAnswer as number, guestAnswer as number)
     default: return 0
   }
 }

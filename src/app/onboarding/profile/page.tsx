@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 export default function OnboardingProfilePage() {
   const router = useRouter()
   const [name, setName] = useState('')
+  const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [birthday, setBirthday] = useState('')
   const [relationshipStart, setRelationshipStart] = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,6 +30,7 @@ export default function OnboardingProfilePage() {
       .from('profiles')
       .update({
         name: name.trim(),
+        gender: gender || null,
         birthday: birthday || null,
         relationship_start_date: relationshipStart || null,
       })
@@ -64,6 +66,36 @@ export default function OnboardingProfilePage() {
           autoComplete="given-name"
           error={error}
         />
+
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">
+            Kamu...
+          </label>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setGender('male')}
+              className={`flex-1 rounded-2xl border py-3 text-sm font-semibold transition-all ${
+                gender === 'male'
+                  ? 'border-rose bg-rose-50 text-rose'
+                  : 'border-border bg-white text-ink-muted hover:border-rose'
+              }`}
+            >
+              Cowok
+            </button>
+            <button
+              type="button"
+              onClick={() => setGender('female')}
+              className={`flex-1 rounded-2xl border py-3 text-sm font-semibold transition-all ${
+                gender === 'female'
+                  ? 'border-rose bg-rose-50 text-rose'
+                  : 'border-border bg-white text-ink-muted hover:border-rose'
+              }`}
+            >
+              Cewek
+            </button>
+          </div>
+        </div>
 
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">

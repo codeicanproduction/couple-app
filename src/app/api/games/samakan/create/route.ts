@@ -63,7 +63,7 @@ export async function POST(req: Request) {
         if (subs) {
           const payload = JSON.stringify({
             title: 'Nanti Kita',
-            body: `${profile?.name ?? 'Pasanganmu'} ngajak main Samakan!`,
+            body: `${profile?.name ?? 'Pasanganmu'} ngajak main Sinkronisasi!`,
             url: `/app/games/samakan/${session.id}`,
           })
           await Promise.allSettled(subs.map(sub =>

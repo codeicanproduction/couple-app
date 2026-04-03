@@ -16,7 +16,7 @@ const GAMES = [
   },
   {
     id: 'samakan',
-    title: 'Samakan',
+    title: 'Sinkronisasi',
     desc: 'Main bareng pasangan real-time',
     icon: Zap,
     color: 'bg-purple-50 text-purple-600',

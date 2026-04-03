@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Bell, Check } from 'lucide-react'
 
-interface SamakanLobbyProps {
+interface SinkronisasiLobbyProps {
   myName: string
   myAvatar: string | null
   partnerName: string
@@ -16,11 +16,11 @@ interface SamakanLobbyProps {
   partnerId: string | null
 }
 
-export default function SamakanLobby({
+export default function SinkronisasiLobby({
   myName, myAvatar, partnerName, partnerAvatar,
   isPartnerConnected, isMyReady, isPartnerReady, onReady,
   sessionId, partnerId,
-}: SamakanLobbyProps) {
+}: SinkronisasiLobbyProps) {
   const [notifSent, setNotifSent] = useState(false)
   const [notifSending, setNotifSending] = useState(false)
 
@@ -34,7 +34,7 @@ export default function SamakanLobby({
         body: JSON.stringify({
           recipientId: partnerId,
           title: 'Nanti Kita',
-          body: `${myName} nungguin kamu main Samakan! Ayo join sekarang`,
+          body: `${myName} nungguin kamu main Sinkronisasi! Ayo join sekarang`,
           url: `/app/games/samakan/${sessionId}`,
         }),
       })
@@ -45,7 +45,7 @@ export default function SamakanLobby({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-ink to-gray-900 px-6">
-      <h2 className="mb-2 text-2xl font-bold text-white">Samakan</h2>
+      <h2 className="mb-2 text-2xl font-bold text-white">Sinkronisasi</h2>
       <p className="mb-10 text-sm text-white/60">Siap-siap main bareng!</p>
 
       <div className="flex items-center gap-8 mb-12">

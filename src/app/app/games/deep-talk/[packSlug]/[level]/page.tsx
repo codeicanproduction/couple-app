@@ -22,6 +22,8 @@ export default function DeepTalkPlayPage() {
   const [questions, setQuestions] = useState<DeepTalkQuestion[]>([])
   const [myName, setMyName] = useState<string>('Kamu')
   const [partnerName, setPartnerName] = useState<string>('Pasangan')
+  const [myUserId, setMyUserId] = useState<string>('')
+  const [partnerUserId, setPartnerUserId] = useState<string>('')
   const [coupleId, setCoupleId] = useState<string | null>(null)
   const [packId, setPackId] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -34,6 +36,7 @@ export default function DeepTalkPlayPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+    setMyUserId(user.id)
 
     // Get my profile
     const { data: myProfile } = await supabase
@@ -51,6 +54,7 @@ export default function DeepTalkPlayPage() {
       .from('couple_members').select('profile_id')
       .eq('couple_id', membership.couple_id).neq('profile_id', user.id)
     if (partnerMembers?.[0]) {
+      setPartnerUserId(partnerMembers[0].profile_id)
       const { data: pp } = await supabase.from('profiles').select('name').eq('id', partnerMembers[0].profile_id).single()
       if (pp?.name) setPartnerName(pp.name)
     }
@@ -90,7 +94,11 @@ export default function DeepTalkPlayPage() {
   }, [currentIndex, isCompleted])
 
   function getAssignedName(index: number): string {
-    return index % 2 === 0 ? myName : partnerName
+    // Deterministic turn order: compare user IDs alphabetically
+    // Both players will get the same order regardless of who opens first
+    const iAmFirst = myUserId < partnerUserId
+    if (index % 2 === 0) return iAmFirst ? myName : partnerName
+    return iAmFirst ? partnerName : myName
   }
 
   function goNext() {

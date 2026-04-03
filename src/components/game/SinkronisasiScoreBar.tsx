@@ -2,7 +2,7 @@
 
 import { X, Volume2, VolumeX } from 'lucide-react'
 
-interface SamakanScoreBarProps {
+interface SinkronisasiScoreBarProps {
   currentRound: number
   totalRounds: number
   totalScore: number
@@ -11,10 +11,10 @@ interface SamakanScoreBarProps {
   onToggleMute?: () => void
 }
 
-export default function SamakanScoreBar({
+export default function SinkronisasiScoreBar({
   currentRound, totalRounds, totalScore, onClose,
   muted, onToggleMute,
-}: SamakanScoreBarProps) {
+}: SinkronisasiScoreBarProps) {
   return (
     <div className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between bg-black/40 backdrop-blur-sm px-4 py-3">
       {/* Round dots */}

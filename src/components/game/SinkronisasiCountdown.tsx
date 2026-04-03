@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 
-interface SamakanCountdownProps {
+interface SinkronisasiCountdownProps {
   onComplete: () => void
 }
 
-export default function SamakanCountdown({ onComplete }: SamakanCountdownProps) {
+export default function SinkronisasiCountdown({ onComplete }: SinkronisasiCountdownProps) {
   const [count, setCount] = useState(3)
 
   useEffect(() => {

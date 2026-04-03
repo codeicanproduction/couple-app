@@ -23,18 +23,17 @@ import type {
 } from '@/types/samakan'
 
 import StoryCard from '@/components/game/StoryCard'
-import SamakanLobby from '@/components/game/SamakanLobby'
-import SamakanCountdown from '@/components/game/SamakanCountdown'
-import SamakanScoreBar from '@/components/game/SamakanScoreBar'
+import SinkronisasiLobby from '@/components/game/SinkronisasiLobby'
+import SinkronisasiCountdown from '@/components/game/SinkronisasiCountdown'
+import SinkronisasiScoreBar from '@/components/game/SinkronisasiScoreBar'
 import RoundPilihSama from '@/components/game/RoundPilihSama'
 import RoundSliderSama from '@/components/game/RoundSliderSama'
 import RoundTebakAngka from '@/components/game/RoundTebakAngka'
 import RoundTebakPasangan from '@/components/game/RoundTebakPasangan'
-import RoundTapBareng from '@/components/game/RoundTapBareng'
-import SamakanReveal from '@/components/game/SamakanReveal'
-import SamakanResults from '@/components/game/SamakanResults'
+import SinkronisasiReveal from '@/components/game/SinkronisasiReveal'
+import SinkronisasiResults from '@/components/game/SinkronisasiResults'
 
-export default function SamakanGamePage() {
+export default function SinkronisasiGamePage() {
   const params = useParams()
   const router = useRouter()
   const sessionId = params.sessionId as string
@@ -219,17 +218,6 @@ export default function SamakanGamePage() {
     }
   }, [userId, broadcast, scoreAndReveal])
 
-  // ─── TAP BARENG HANDLER ───
-  const handleTapSubmit = useCallback((timestamp: number) => {
-    setMyAnswer(timestamp)
-    broadcast({ type: 'tap_timestamp', playerId: userId, timestamp })
-
-    if (roleRef.current === 'host') {
-      const pa = partnerAnswerRef.current
-      if (pa !== null) scoreAndReveal(timestamp, pa)
-    }
-  }, [userId, broadcast, scoreAndReveal])
-
   // ─── BROADCAST EVENT HANDLER ───
   useEffect(() => {
     onEvent((payload: BroadcastPayload) => {
@@ -270,12 +258,6 @@ export default function SamakanGamePage() {
           setRoundResults(payload.results)
           // FIX: guest transitions to story_ending (was missing, caused stuck)
           setTimeout(() => setPhase('story_ending'), 3500)
-          break
-        case 'tap_timestamp':
-          setPartnerAnswer(payload.timestamp)
-          if (roleRef.current === 'host' && myAnswerRef.current !== null) {
-            scoreAndReveal(myAnswerRef.current, payload.timestamp)
-          }
           break
         case 'story_next':
           advanceFromStory()
@@ -319,7 +301,7 @@ export default function SamakanGamePage() {
 
   if (phase === 'lobby') {
     return (
-      <SamakanLobby
+      <SinkronisasiLobby
         myName={myName} myAvatar={myAvatar} partnerName={partnerName} partnerAvatar={partnerAvatar}
         isPartnerConnected={isPartnerConnected} isMyReady={isMyReady} isPartnerReady={isPartnerReady}
         sessionId={sessionId} partnerId={partnerUserId}
@@ -329,7 +311,7 @@ export default function SamakanGamePage() {
   }
 
   if (phase === 'countdown') {
-    return <SamakanCountdown onComplete={() => setPhase('story_intro')} />
+    return <SinkronisasiCountdown onComplete={() => setPhase('story_intro')} />
   }
 
   if (phase === 'story_intro') {
@@ -352,7 +334,7 @@ export default function SamakanGamePage() {
   if (phase === 'reveal' && roundResults.length > 0) {
     const lastResult = roundResults[roundResults.length - 1]
     return (
-      <SamakanReveal
+      <SinkronisasiReveal
         result={lastResult}
         myName={role === 'host' ? myName : partnerName}
         partnerName={role === 'host' ? partnerName : myName}
@@ -366,7 +348,7 @@ export default function SamakanGamePage() {
     const pct = maxScore > 0 ? (totalScore / maxScore) * 100 : 0
     const endingText = pct >= 80 ? chapter.endings.high : pct >= 50 ? chapter.endings.mid : chapter.endings.low
     return (
-      <SamakanResults
+      <SinkronisasiResults
         totalScore={totalScore} results={roundResults} ending={endingText}
         chapterTitle={chapter.title}
         onPlayAgain={() => router.push('/app/games/samakan')}
@@ -382,7 +364,7 @@ export default function SamakanGamePage() {
 
     return (
       <div className={`fixed inset-0 z-50 ${chapter.bgClass}`}>
-        <SamakanScoreBar
+        <SinkronisasiScoreBar
           currentRound={currentRound} totalRounds={chapter.rounds.length}
           totalScore={totalScore} onClose={handleClose}
           muted={muted} onToggleMute={() => setMuted(m => !m)}
@@ -400,9 +382,6 @@ export default function SamakanGamePage() {
         {config.type === 'tebak_pasangan' && (
           <RoundTebakPasangan config={config} role={role} onSubmit={handleMyAnswer} />
         )}
-        {config.type === 'tap_bareng' && (
-          <RoundTapBareng config={config} onSubmit={handleTapSubmit} />
-        )}
       </div>
     )
   }
@@ -410,7 +389,7 @@ export default function SamakanGamePage() {
   // Fallback
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center ${chapter.bgClass}`}>
-      <SamakanScoreBar
+      <SinkronisasiScoreBar
         currentRound={currentRound} totalRounds={chapter.rounds.length}
         totalScore={totalScore} onClose={handleClose}
         muted={muted} onToggleMute={() => setMuted(m => !m)}

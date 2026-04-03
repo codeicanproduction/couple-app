@@ -3,7 +3,7 @@
 import { Check, X, ArrowLeft, RotateCcw } from 'lucide-react'
 import type { RoundResult, RoundType } from '@/types/samakan'
 
-interface SamakanResultsProps {
+interface SinkronisasiResultsProps {
   totalScore: number
   results: RoundResult[]
   ending: string
@@ -17,7 +17,6 @@ const ROUND_TYPE_LABELS: Record<RoundType, string> = {
   slider_sama: 'Slider',
   tebak_angka: 'Tebak Angka',
   tebak_pasangan: 'Tebak Pasangan',
-  tap_bareng: 'Tap Bareng',
 }
 
 const ROUND_TYPE_EMOJI: Record<RoundType, string> = {
@@ -25,17 +24,16 @@ const ROUND_TYPE_EMOJI: Record<RoundType, string> = {
   slider_sama: '📊',
   tebak_angka: '🔢',
   tebak_pasangan: '🔮',
-  tap_bareng: '👆',
 }
 
-export default function SamakanResults({
+export default function SinkronisasiResults({
   totalScore,
   results,
   ending,
   chapterTitle,
   onPlayAgain,
   onBack,
-}: SamakanResultsProps) {
+}: SinkronisasiResultsProps) {
   const maxScore = results.length * 20
   const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0
   const circumference = 2 * Math.PI * 54

@@ -16,6 +16,7 @@ import AvatarUpload from '@/components/app/AvatarUpload'
 
 interface ProfileData {
   name: string | null
+  gender: string | null
   birthday: string | null
   relationship_start_date: string | null
   avatar_url: string | null
@@ -35,6 +36,7 @@ export default function ProfilePage() {
   // Edit profile state
   const [editOpen, setEditOpen] = useState(false)
   const [editName, setEditName] = useState('')
+  const [editGender, setEditGender] = useState('')
   const [editBirthday, setEditBirthday] = useState('')
   const [editRelDate, setEditRelDate] = useState('')
   const [saving, setSaving] = useState(false)
@@ -54,7 +56,7 @@ export default function ProfilePage() {
 
     const { data: prof } = await supabase
       .from('profiles')
-      .select('name, birthday, relationship_start_date, avatar_url')
+      .select('name, gender, birthday, relationship_start_date, avatar_url')
       .eq('id', user.id).single()
     setProfile(prof)
 
@@ -82,6 +84,7 @@ export default function ProfilePage() {
 
   function openEditProfile() {
     setEditName(profile?.name ?? '')
+    setEditGender(profile?.gender ?? '')
     setEditBirthday(profile?.birthday ?? '')
     setEditRelDate(profile?.relationship_start_date ?? '')
     setEditOpen(true)
@@ -94,6 +97,7 @@ export default function ProfilePage() {
     const supabase = createClient()
     await supabase.from('profiles').update({
       name: editName.trim(),
+      gender: editGender || null,
       birthday: editBirthday || null,
       relationship_start_date: editRelDate || null,
     }).eq('id', userId)
@@ -223,7 +227,7 @@ export default function ProfilePage() {
 
   const MENU_ITEMS = [
     { icon: User, label: 'About Me', desc: 'MBTI, Love Language, dll', href: '/app/about-me' },
-    { icon: Gamepad2, label: 'Games', desc: 'Samakan, Deep Talk, dll', href: '/app/games' },
+    { icon: Gamepad2, label: 'Games', desc: 'Sinkronisasi, Deep Talk, dll', href: '/app/games' },
     { icon: Wallet, label: 'Keuangan', desc: 'Tabungan & wishlist', href: '/app/finance' },
     { icon: CalendarDays, label: 'Kalender', desc: 'Tanggal penting & date plan', href: '/app/calendar' },
     { icon: Mail, label: 'Surat Rahasia', desc: 'Tulis surat terkunci', href: '/app/letters' },
@@ -413,6 +417,19 @@ export default function ProfilePage() {
             <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
               placeholder="Nama kamu" required
               className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm focus:border-rose focus:outline-none focus:ring-2 focus:ring-rose/20" />
+          </div>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">Gender</label>
+            <div className="flex gap-2">
+              {(['male', 'female'] as const).map(g => (
+                <button key={g} type="button" onClick={() => setEditGender(g)}
+                  className={`flex-1 rounded-xl border py-2.5 text-sm font-semibold transition-all ${
+                    editGender === g ? 'border-rose bg-rose-50 text-rose' : 'border-border text-ink-muted hover:border-rose'
+                  }`}>
+                  {g === 'male' ? 'Cowok' : 'Cewek'}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="space-y-1">
             <label className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">Tanggal Lahir</label>

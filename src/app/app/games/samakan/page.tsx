@@ -8,7 +8,7 @@ import { CHAPTERS } from '@/data/samakan'
 import { getGameHistory } from '@/lib/samakan'
 import type { GameSession } from '@/types/samakan'
 
-export default function SamakanHubPage() {
+export default function SinkronisasiHubPage() {
   const router = useRouter()
   const supabase = createClient()
 
@@ -100,7 +100,7 @@ export default function SamakanHubPage() {
           <div>
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-purple-500" />
-              <h1 className="text-xl font-bold text-ink">Samakan</h1>
+              <h1 className="text-xl font-bold text-ink">Sinkronisasi</h1>
             </div>
             <p className="text-sm text-ink-muted">Main bareng {partnerName} real-time</p>
           </div>

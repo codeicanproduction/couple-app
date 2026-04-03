@@ -1,6 +1,6 @@
 export type GameStatus = 'waiting' | 'playing' | 'completed' | 'expired'
 export type PlayerRole = 'host' | 'guest'
-export type RoundType = 'pilih_sama' | 'slider_sama' | 'tebak_angka' | 'tebak_pasangan' | 'tap_bareng'
+export type RoundType = 'pilih_sama' | 'slider_sama' | 'tebak_angka' | 'tebak_pasangan'
 
 export type GamePhase =
   | 'connecting'
@@ -43,17 +43,11 @@ export interface TebakPasanganConfig {
   options: string[]  // multiple choice options
 }
 
-export interface TapBarengConfig {
-  type: 'tap_bareng'
-  storyPrompt: string
-}
-
 export type RoundConfig =
   | PilihSamaConfig
   | SliderSamaConfig
   | TebakAngkaConfig
   | TebakPasanganConfig
-  | TapBarengConfig
 
 // --- Round Result ---
 export interface RoundResult {
@@ -91,7 +85,6 @@ export type BroadcastPayload =
   | { type: 'player_answer'; playerId: string; roundIndex: number; answer: unknown }
   | { type: 'round_reveal'; roundIndex: number; result: RoundResult }
   | { type: 'game_complete'; totalScore: number; results: RoundResult[] }
-  | { type: 'tap_timestamp'; playerId: string; timestamp: number }
   | { type: 'sync_state'; phase: GamePhase; currentRound: number; results: RoundResult[] }
   | { type: 'story_next' }
 
