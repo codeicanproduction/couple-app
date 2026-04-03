@@ -12,6 +12,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_daily_questions: {
+        Row: { id: string; couple_id: string; question_date: string; question: string; context_used: Json | null; generated_by: string; created_at: string | null }
+        Insert: { id?: string; couple_id: string; question_date?: string; question: string; context_used?: Json | null; generated_by: string; created_at?: string | null }
+        Update: { id?: string; couple_id?: string; question_date?: string; question?: string; context_used?: Json | null; generated_by?: string; created_at?: string | null }
+        Relationships: [{ foreignKeyName: "ai_daily_questions_couple_id_fkey"; columns: ["couple_id"]; isOneToOne: false; referencedRelation: "couples"; referencedColumns: ["id"] }]
+      }
       assessment_results: {
         Row: {
           id: string

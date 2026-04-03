@@ -6,6 +6,7 @@ import MissYouButton from '@/components/app/MissYouButton'
 import LettersBanner from '@/components/app/LettersBanner'
 import DailyQuestionCard from '@/components/app/DailyQuestionCard'
 import QuickAccessGrid from '@/components/app/QuickAccessGrid'
+import AIDailyQuestionCard from '@/components/app/AIDailyQuestionCard'
 
 export default async function HomePage() {
   const supabase = await createServerSupabaseClient()
@@ -63,7 +64,10 @@ export default async function HomePage() {
         {/* ===== SURAT RAHASIA (with notification badge when unread) ===== */}
         <LettersBanner myId={user.id} coupleId={myMembership?.couple_id ?? null} />
 
-        {/* ===== DAILY QUESTION ===== */}
+        {/* ===== AI DAILY QUESTION ===== */}
+        <AIDailyQuestionCard coupleId={myMembership?.couple_id ?? null} />
+
+        {/* ===== DAILY QUESTION (static) ===== */}
         <DailyQuestionCard
           question={question}
           questionIndex={index}
