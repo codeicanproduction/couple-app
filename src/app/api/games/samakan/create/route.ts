@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       partner_id: partnerId,
       chapter_id: chapterId,
       round_types: roundTypes,
+      rounds: [],
     }).select('id').single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

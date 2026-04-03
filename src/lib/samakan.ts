@@ -60,6 +60,7 @@ export async function createGameSession(
     partner_id: partnerId,
     chapter_id: chapterId,
     round_types: roundTypes,
+    rounds: [] as Json[],
     status: 'waiting',
   }).select('id').single()
   if (error) { console.error('createGameSession error:', error); return null }
