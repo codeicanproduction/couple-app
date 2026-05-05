@@ -1,27 +1,37 @@
 import type { RelationshipLevel } from '@/types/app'
 
+// Parse "YYYY-MM-DD" as local midnight to avoid UTC-offset shifting
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+// Format a local Date to "YYYY-MM-DD" without UTC conversion
+function formatDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 /** Number of full days between a past date and today */
 export function daysSince(dateStr: string): number {
-  const past = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - past.getTime()
+  const past = parseLocalDate(dateStr)
+  const nowMidnight = new Date()
+  nowMidnight.setHours(0, 0, 0, 0)
+  const diff = nowMidnight.getTime() - past.getTime()
   return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 
 /** Number of days until a future date (returns 0 if today, negative if past) */
 export function daysUntil(dateStr: string): number {
-  const target = new Date(dateStr)
-  const now = new Date()
-  // Compare date only (ignore time)
-  const targetMidnight = new Date(target.getFullYear(), target.getMonth(), target.getDate())
-  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const targetMidnight = parseLocalDate(dateStr)
+  const nowMidnight = new Date()
+  nowMidnight.setHours(0, 0, 0, 0)
   const diff = targetMidnight.getTime() - nowMidnight.getTime()
   return Math.round(diff / (1000 * 60 * 60 * 24))
 }
 
 /** Format a date string to Indonesian locale: "22 Maret 2026" */
 export function formatDateID(dateStr: string): string {
-  const date = new Date(dateStr)
+  const date = parseLocalDate(dateStr)
   return date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -31,7 +41,7 @@ export function formatDateID(dateStr: string): string {
 
 /** Format a date string to short Indonesian: "22 Mar" */
 export function formatDateShortID(dateStr: string): string {
-  const date = new Date(dateStr)
+  const date = parseLocalDate(dateStr)
   return date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'short',
@@ -40,19 +50,20 @@ export function formatDateShortID(dateStr: string): string {
 
 /**
  * Get the next occurrence of a recurring annual event.
- * If the event date this year is in the past (or today), return next year's date.
+ * If the event date this year is in the past, return next year's date.
  */
 export function getNextOccurrence(eventDateStr: string): string {
-  const event = new Date(eventDateStr)
+  const [, monthStr, dayStr] = eventDateStr.split('-')
+  const month = parseInt(monthStr, 10) - 1
+  const day = parseInt(dayStr, 10)
   const now = new Date()
-  const thisYear = new Date(now.getFullYear(), event.getMonth(), event.getDate())
   const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
+  const thisYear = new Date(now.getFullYear(), month, day)
   if (thisYear >= nowMidnight) {
-    return thisYear.toISOString().split('T')[0]
+    return formatDateKey(thisYear)
   }
-  const nextYear = new Date(now.getFullYear() + 1, event.getMonth(), event.getDate())
-  return nextYear.toISOString().split('T')[0]
+  return formatDateKey(new Date(now.getFullYear() + 1, month, day))
 }
 
 /**
